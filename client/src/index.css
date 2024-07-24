@@ -14,7 +14,12 @@
 body {
     font-family: "Montserrat", sans-serif;
     scroll-behavior: smooth;
-    background-color:#e6e6e6;
+    /* background-color:#e6e6e6; */
+    background-color: #0A0F27;
+}
+
+.bg-red {
+    background: linear-gradient(to right, #F06813, #E33B57);
 }
 
 ::-webkit-scrollbar {

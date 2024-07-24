@@ -7,10 +7,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#008080",   //Background Color: Teal 
-        seconday: "#FF6F61", //Active Link/Highlight Color: Coral
-        tertiary: "#333333"
-      }
+        primary: "#0A0F27",
+      },
     },
   },
   plugins: [],

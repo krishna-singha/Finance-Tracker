@@ -5,13 +5,13 @@ import Footer from "./Footer";
 const Template = () => {
     return (
         <>
-            <header className="bg-blue-600">
+            <header className="bg-primary border-b border-[#ffe1ff47] sticky top-0">
                 <Navbar />
             </header>
             <main className="min-h-screen">
                 <Outlet />
             </main>
-            <footer className="border-t border-[#0000006a]">
+            <footer className="border-t border-[#ffe1ff47]">
                 <Footer />
             </footer>
         </>
