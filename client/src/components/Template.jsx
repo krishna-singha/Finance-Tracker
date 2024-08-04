@@ -11,7 +11,7 @@ const Template = () => {
             {/* <header className="bg-primary border-b border-[#ffe1ff47] sticky top-0">
                 <Navbar />
             </header> */}
-            <header className="bg-primary sticky top-0">
+            <header className="bg-primary sticky top-0 z-[999]">
                 <div className="max-w-[1550px] mx-auto py-6 flex items-center justify-between">
                     <div>
                         <h1 className="text-white text-xl">Personal Finance Tracker</h1>

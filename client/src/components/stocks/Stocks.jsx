@@ -17,8 +17,8 @@ const TopThreeStocks = () => {
     // }, []);
 
     const stocks = [
-        { name: 'Tata Steel Ltd', quantity: 2, invested: 280.46, price: 158.22 },
         { name: 'One 97 Communications Ltd', quantity: 1, invested: 403.00, price: 527.00 },
+        { name: 'Tata Steel Ltd', quantity: 2, invested: 280.46, price: 158.22 },
         { name: 'Alphabet Inc', quantity: 1, invested: 130.00, price: 150.00 },
     ];
 
