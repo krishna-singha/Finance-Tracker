@@ -5,30 +5,56 @@ import TotalIncome from "../components/TotalIncome";
 import CustomPieChart from "../components/CustomPieChart";
 import LineChart from "../components/LineChart";
 // import LastFiveTransection from "../components/LastFiveTransection"
+import Profile from "../components/profile/Profile";
+import IncomeGraph from "../components/income/IncomeGraph";
+import ExpensesGraph from "../components/expenses/ExpensesGraph";
+import TopThreeStocks from "../components/stocks/Stocks";
+import AddData from "../components/addData/AddData";
+import Suggesions from "../components/suggesions/Suggestions";
 
 const Home = () => {
 
-    const data = [
-        { name: 'Category A', value: 400 },
-        { name: 'Category B', value: 300 },
-        { name: 'Category C', value: 300 },
-        { name: 'Category D', value: 200 },
-    ];
-
-    const lineData = [
-        { name: 'Jan', value: 40 },
-        { name: 'Feb', value: 30 },
-        { name: 'Mar', value: 35 },
-        { name: 'Apr', value: 50 },
-        { name: 'May', value: 55 },
-        { name: 'Jun', value: 60 },
-        { name: 'Jul', value: 5}
-    ];
-
     return (
         <section className="py-10">
-            <div className="max-w-[1380px] mx-auto">
-                <div className="grid grid-cols-4 gap-8">
+            <div className="max-w-[1550px] mx-auto">
+                <div className="flex gap-6 justify-between">
+                    <div>
+                        <div className="flex gap-6">
+                            <div>
+                                <div className="h-fit mb-6">
+                                    <AvailableBalance />
+                                </div>
+                                <div>
+                                    <AddData />
+                                </div>
+                            </div>
+                            <div className="">
+                                <div className="w-[15rem] mb-6">
+                                    <IncomeGraph />
+                                </div>
+                                <div className="w-[15rem]">
+                                    <ExpensesGraph />
+                                </div>
+                            </div>
+                            <div className="w-[22rem]">
+                                <TopThreeStocks />
+                            </div>
+                        </div>
+                        <div className="w-full mt-6">
+                            <LineChart />
+                        </div>
+                    </div>
+                    <div className="w-[32rem]">
+                        <div className=" mb-6">
+                            <Suggesions />
+                        </div>
+                        <div>
+                            <CustomPieChart />
+                        </div>
+                    </div>
+                </div>
+
+                {/* <div className="grid grid-cols-4 gap-8">
                     <div>
                         <AvailableBalance />
                     </div>
@@ -41,35 +67,19 @@ const Home = () => {
                     <div>
                         <TotalExpenses />
                     </div>
-                </div>
+                </div> */}
                 <div className="mt-6 flex gap-6">
-                    <div className="w-[60%] h-[35rem] bg-[#181C3A] rounded-md flex juce' items-center">
+                    {/* <div className="w-[40%] bg-[#181C3A] rounded-md flex juce' items-center">
                         <div className="w-full">
-                            <LineChart data={lineData} />
+                            <LineChart />
                         </div>
-                    </div>
-                    <div className="bg-[#181C3A] h-[35rem] w-[40%] rounded-md flex items-center">
+                    </div> */}
+                    {/* <div className="bg-[#181C3A] h-[35rem] w-[40%] rounded-md flex items-center">
                         <div className="w-full">
-                            <CustomPieChart data={data} />
+                            
                         </div>
-                    </div>
+                    </div> */}
                 </div>
-                {/* <div>
-                    <LastFiveTransection />
-                </div> */}
-                {/* <div className="mt-6 flex gap-6 justify-between">
-                    <div className="w-full">
-                        <input type="search" placeholder="Search by Name" className="px-4 py-2 w-full rounded-md bg-[#181C3A]" />
-                    </div>
-                    <div>
-                        <select name="sort" id="sort" className="bg-[#181C3A]">
-                            <option value="all">All</option>
-                            <option value="Income">Income</option>
-                            <option value="Expenses">Expenses</option>
-                            <option value="Savings">Savings</option>
-                        </select>
-                    </div>
-                </div> */}
             </div>
         </section>
     )

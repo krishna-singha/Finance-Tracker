@@ -1,7 +1,15 @@
 import React from 'react';
 import ReactEcharts from 'echarts-for-react';
 
-const StylishPieChart = ({ data }) => {
+const StylishPieChart = () => {
+  const data = [
+    { name: 'Shopings', value: 400 },
+    { name: 'Grocery', value: 300 },
+    { name: 'Travels', value: 1700 },
+    { name: 'Books', value: 3300 },
+    { name: 'Stocks', value: 4000 },
+];
+
   const getOption = () => {
     const processedData = data.map(item => ({
       value: item.value,
@@ -45,8 +53,13 @@ const StylishPieChart = ({ data }) => {
   };
 
   return (
-    <div style={{ backgroundColor: '#181C3A', padding: '20px', borderRadius: '10px' }}>
-      <ReactEcharts option={getOption()} style={{ height: 400, width: '100%' }} />
+    <div className='p-4 bg-[#181C3A] rounded-xl'>
+      <div>
+        <h1 className='text-white'>Expenses</h1>
+      </div>
+      <div className='h-[25rem]'>
+        <ReactEcharts option={getOption()} style={{ height: '100%', width: '100%' }} />
+      </div>
     </div>
   );
 };

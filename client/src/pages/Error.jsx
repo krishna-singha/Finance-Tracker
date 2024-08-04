@@ -7,10 +7,10 @@ const Error = () => {
     }
 
     return (
-        <section className="min-h-screen flex items-center justify-center">
+        <section className="min-h-screen flex items-center justify-center text-white">
             <div className="text-2xl flex flex-col items-center gap-4">
                 <h1>404! Page Not Found</h1>
-                <button onClick={() => navigateTo("/")} className="bg-blue-600 text-white px-4 py-2 rounded-xl">Go Back</button>
+                <button onClick={() => navigateTo("/")} className="bg-blue-600  px-4 py-2 rounded-xl">Go Back</button>
             </div>
         </section>
     )
