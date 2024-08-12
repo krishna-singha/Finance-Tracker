@@ -37,6 +37,10 @@ const AddData = () => {
                 placeholder="Enter the amount"
                 className="bg-[#252839] rounded-md p-2"
               />
+              <input
+                type="date"
+                className='bg-[#252839] rounded-md p-2'
+              />
             </>
           )}
           {selectedOption === 'Expenses' && (
@@ -51,6 +55,10 @@ const AddData = () => {
                 placeholder="Enter the amount"
                 className="bg-[#252839] rounded-md p-2"
               />
+              <input
+                type="date"
+                className='bg-[#252839] rounded-md p-2'
+              />
             </>
           )}
           {selectedOption === 'stocks' && (
@@ -64,6 +72,10 @@ const AddData = () => {
                 type="number"
                 placeholder="Enter the quantity"
                 className="bg-[#252839] rounded-md p-2"
+              />
+              <input
+                type="date"
+                className='bg-[#252839] rounded-md p-2'
               />
             </>
           )}

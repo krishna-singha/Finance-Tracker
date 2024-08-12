@@ -98,7 +98,7 @@ const IncomeGraph = () => {
     };
 
     return (
-        <div className='rounded-xl p-4 bg-[#181C3A]'>
+        <div className='rounded-xl px-4 py-8 bg-[#181C3A]'>
             <div className='text-white'>
                 <h2 className='font-bold'>Income</h2>
                 <span><FaIndianRupeeSign className='inline-block'/>{calculateIncome()}</span>

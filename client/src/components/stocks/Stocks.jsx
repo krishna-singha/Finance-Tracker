@@ -28,7 +28,7 @@ const TopThreeStocks = () => {
     };
 
         return (
-            <div className='bg-[#181C3A] text-white w-full rounded-xl p-4'>
+            <div className='bg-[#181C3A] text-white w-full rounded-xl px-4 py-8'>
                 {/* {loading ? (
                 <p>Loading...</p>
             ) : (
@@ -59,7 +59,9 @@ const TopThreeStocks = () => {
                     </div>
                 )
                 )}
-
+                <div className='flex justify-center'>
+                    <button className='text-white bg-[#252839] px-4 py-2 rounded-md'>View All</button>
+                </div>
             </div>
         );
     }

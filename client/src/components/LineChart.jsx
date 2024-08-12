@@ -3,14 +3,6 @@ import ReactEcharts from 'echarts-for-react';
 import * as echarts from 'echarts';
 
 const LineChart = () => {
-  const totalData = [
-    { name: '01 Jan 24', value: 40 },
-    { name: '02 Jan 24', value: 30 },
-    { name: '03 Jan 24', value: 20 },
-    { name: '04 Jan 24', value: 100 },
-    { name: '05 Jan 24', value: 40 },
-  ];
-
   const incomeData = [
     { name: '01 Jan 24', value: 20 },
     { name: '02 Jan 24', value: 15 },
@@ -26,6 +18,27 @@ const LineChart = () => {
     { name: '04 Jan 24', value: 25 },
     { name: '05 Jan 24', value: 10 },
   ];
+
+  // Calculate total values by summing income and expenses
+  const totalData = incomeData.map((item, index) => {
+    return {
+      name: item.name,
+      value: item.value + expensesData[index].value,
+    };
+  });
+
+  // Calculate total slopes
+  const calculateTotalSlopes = (data) => {
+    let slopes = [];
+    for (let i = 1; i < data.length; i++) {
+      const slope = data[i].value - data[i - 1].value;
+      slopes.push(slope);
+    }
+    return slopes;
+  };
+
+  const totalSlopes = calculateTotalSlopes(totalData);
+  // console.log('Total Slopes:', totalSlopes);
 
   const getOption = () => {
     const names = totalData.map(item => item.name);
@@ -194,7 +207,7 @@ const LineChart = () => {
   };
 
   return (
-    <div className='h-[30rem] pt-6 bg-[#181C3A] rounded-xl'>
+    <div className='h-[30rem] py-8 bg-[#181C3A] rounded-xl'>
       <ReactEcharts option={getOption()} style={{ height: '100%', width: '100%' }} />
     </div>
   );
