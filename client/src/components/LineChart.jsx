@@ -1,51 +1,43 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import ReactEcharts from 'echarts-for-react';
 import * as echarts from 'echarts';
+import { useRecoilValue } from 'recoil';
+import { incomeAtom } from '../store/incomeAtom';
+import { expenseAtom } from '../store/expenseAtom';
 
 const LineChart = () => {
-  const incomeData = [
-    { name: '01 Jan 24', value: 20 },
-    { name: '02 Jan 24', value: 15 },
-    { name: '03 Jan 24', value: 25 },
-    { name: '04 Jan 24', value: 35 },
-    { name: '05 Jan 24', value: 20 },
-  ];
+  const incomeData = useRecoilValue(incomeAtom);
+  const expenseData = useRecoilValue(expenseAtom);
 
-  const expensesData = [
-    { name: '01 Jan 24', value: 10 },
-    { name: '02 Jan 24', value: 55 },
-    { name: '03 Jan 24', value: 15 },
-    { name: '04 Jan 24', value: 25 },
-    { name: '05 Jan 24', value: 10 },
-  ];
+  console.log('Income Data:', incomeData);
+  console.log('Expenses Data:', expenseData);
 
-  // Calculate total values by summing income and expenses
+  // Calculate total amounts by summing income and expenses
   const totalData = incomeData.map((item, index) => {
     return {
-      name: item.name,
-      value: item.value + expensesData[index].value,
+      date: item.date,
+      amount: item.amount + (expenseData[index]?.amount || 0),
     };
   });
 
-  // Calculate total slopes
-  const calculateTotalSlopes = (data) => {
-    let slopes = [];
-    for (let i = 1; i < data.length; i++) {
-      const slope = data[i].value - data[i - 1].value;
-      slopes.push(slope);
-    }
-    return slopes;
-  };
+  // Calculate total slopes (if needed)
+  // const calculateTotalSlopes = (data) => {
+  //   let slopes = [];
+  //   for (let i = 1; i < data.length; i++) {
+  //     const slope = data[i].amount - data[i - 1].amount;
+  //     slopes.push(slope);
+  //   }
+  //   return slopes;
+  // };
 
-  const totalSlopes = calculateTotalSlopes(totalData);
-  // console.log('Total Slopes:', totalSlopes);
+  // const totalSlopes = calculateTotalSlopes(totalData);
 
   const getOption = () => {
-    const names = totalData.map(item => item.name);
+    const dates = totalData.map(item => item.date);
 
-    const totalValues = totalData.map(item => item.value);
-    const incomeValues = incomeData.map(item => item.value);
-    const expensesValues = expensesData.map(item => item.value);
+    const totalValues = totalData.map(item => item.amount);
+    const incomeValues = incomeData.map(item => item.amount);
+    const expensesValues = expenseData.map(item => item.amount);
 
     return {
       backgroundColor: '#181C3A',
@@ -77,7 +69,7 @@ const LineChart = () => {
       },
       xAxis: {
         type: 'category',
-        data: names,
+        data: dates,
         axisLabel: {
           color: '#FFFFFF',
           fontSize: 12,

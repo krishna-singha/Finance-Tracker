@@ -1,25 +1,52 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import ReactEcharts from 'echarts-for-react';
 import * as echarts from 'echarts';
 import { FaIndianRupeeSign } from "react-icons/fa6";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { userAtom } from "../../store/userAtom";
+import { incomeAtom } from '../../store/incomeAtom';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 
 const IncomeGraph = () => {
-    const data = [
-        { name: '01 Jan 24', value: 40 },
-        { name: '02 Jan 24', value: 3000 },
-        { name: '02 Jan 24', value: 30 },
-        { name: '03 Jan 24', value: 200 },
-    ];
+    const user = useRecoilValue(userAtom);
+    const [incomeData, setIncomeData] = useRecoilState(incomeAtom);
+
+    useEffect(() => {
+        const getIncomeData = async () => {
+            try {
+                const response = await fetch(`${BACKEND_URL}/v1/api/getData/incomes`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        _id: user.uid,
+                    }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setIncomeData(data);
+                }
+            } catch (error) {
+                console.error('Get income data error:', error);
+            }
+        };
+
+        if (user) {
+            getIncomeData();
+        }
+    }, [user]);
 
     const calculateIncome = () => {
-        return data.reduce((acc, item) => acc + item.value, 0);
+        return incomeData.reduce((acc, item) => acc + item.amount, 0);
     };
 
     const getOption = () => {
-        // Extract names and values from data
-        const names = data.map(item => item.name);
-        const values = data.map(item => item.value);
+        // Extract dates and amounts from incomeData
+        const dates = incomeData.map(item => item.date);
+        const amounts = incomeData.map(item => item.amount);
 
         return {
             backgroundColor: '#181C3A',
@@ -31,7 +58,7 @@ const IncomeGraph = () => {
             },
             xAxis: {
                 type: 'category',
-                data: names,
+                data: dates,
                 axisLabel: {
                     show: false, // Hide x-axis labels
                 },
@@ -64,7 +91,7 @@ const IncomeGraph = () => {
                 {
                     name: 'Values',
                     type: 'line',
-                    data: values,
+                    data: amounts,
                     smooth: true,
                     lineStyle: {
                         color: new echarts.graphic.LinearGradient(0, 0, 1, 1, [

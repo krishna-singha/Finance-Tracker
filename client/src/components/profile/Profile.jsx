@@ -3,6 +3,7 @@ import { useRecoilState } from "recoil";
 import { userAtom } from "../../store/userAtom";
 import { signOut, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../auth/firebase";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Profile = () => {
 
@@ -46,6 +47,25 @@ const Profile = () => {
             console.error('Logout error:', error);
         }
     };
+
+    useEffect(() => {
+        const userExist = async () => {
+            await fetch(`${BACKEND_URL}/v1/user`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    _id: user.uid,
+                    name: user.name,
+                    email: user.email,
+                }),
+            })
+        };
+        if (user) {
+            userExist();
+        }
+    }), [user];
 
     return (
         <div>
