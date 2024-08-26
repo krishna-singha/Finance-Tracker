@@ -140,7 +140,7 @@ const LineChart = () => {
               borderWidth: 3,
             },
           },
-          animationDuration: 2000,
+          animationDuration: 4000,
         },
         {
           name: 'Income',
@@ -166,7 +166,7 @@ const LineChart = () => {
               borderWidth: 3,
             },
           },
-          animationDuration: 2000,
+          animationDuration: 4000,
         },
         {
           name: 'Expenses',
@@ -192,7 +192,7 @@ const LineChart = () => {
               borderWidth: 3,
             },
           },
-          animationDuration: 2000,
+          animationDuration: 4000,
         },
       ],
     };

@@ -11,6 +11,7 @@ import ExpensesGraph from "../components/expenses/ExpensesGraph";
 import TopThreeStocks from "../components/stocks/Stocks";
 import AddData from "../components/addData/AddData";
 import Suggesions from "../components/suggesions/Suggestions";
+import RadarChart from "../components/RadarChart";
 
 const Home = () => {
 
@@ -53,6 +54,9 @@ const Home = () => {
                         </div>
                     </div>
                 </div>
+                {/* <div>
+                    <RadarChart />
+                </div> */}
 
                 {/* <div className="grid grid-cols-4 gap-8">
                     <div>
