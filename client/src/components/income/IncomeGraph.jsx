@@ -30,7 +30,7 @@ const IncomeGraph = () => {
         };
 
         getIncomeData();
-    }, [user]);
+    }, [user, setIncomes]);
 
     // Process data
     const processedData = useMemo(() => {

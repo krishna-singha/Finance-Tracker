@@ -29,7 +29,7 @@ const ExpensesGraph = () => {
         };
 
         getExpenseData();
-    }, [user]);
+    }, [user, setExpense]);
 
     // Process data
     const processedData = useMemo(() => {

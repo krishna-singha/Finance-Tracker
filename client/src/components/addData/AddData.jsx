@@ -10,10 +10,12 @@ const AddData = () => {
 
   const [selectedOption, setSelectedOption] = useState('income');
   const [formData, setFormData] = useState({
-    source: '',
+    category: '',
+    name: '',
     amount: '',
     date: '',
   });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -29,7 +31,7 @@ const AddData = () => {
 
   const handleAddData = async (e) => {
     e.preventDefault();
-    if(!formData.source || !formData.amount || !formData.date) {
+    if ((selectedOption === 'expense') && !formData.category || !formData.name || !formData.amount || !formData.date) {
       return setError('All fields are required');
     }
     setLoading(true);
@@ -39,16 +41,16 @@ const AddData = () => {
       await axios.post(`${BACKEND_URL}/v1/api/addData/${selectedOption}`, {
         "_id": user.uid,
         [selectedOption]: {
-          [selectedOption == "income" ? "source"
-            : selectedOption == "expense" ? "type"
-              : "name"]: formData.source,
+          ...(selectedOption === "expense" && { "category": formData.category }),  // Include category for expenses
+          "name": formData.name,
           "amount": formData.amount,
           "date": formData.date,
         }
       });
 
       setFormData({
-        source: '',
+        category: '',
+        name: '',
         amount: '',
         date: '',
       });
@@ -59,6 +61,19 @@ const AddData = () => {
     }
   };
 
+  const categories = [
+    'Entertainment',
+    'Travel',
+    'Shopping',
+    'Health',
+    'Education',
+    'Transport',
+    'Groceries',
+    'Electronics',
+    'Other'
+  ];
+
+
   const renderInputs = () => {
     const inputProps = {
       className: "bg-[#252839] rounded-md p-2",
@@ -67,11 +82,24 @@ const AddData = () => {
 
     return (
       <>
+        {selectedOption === 'expense' && (
+          <select
+            name="category"
+            className="bg-[#252839] rounded-md p-2"
+            value={formData.category}
+            onChange={handleInputChange}
+          >
+            <option value="">Select a category</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+        )}
         <input
           type="text"
-          name="source"
-          placeholder={`Enter the ${selectedOption === 'stock' ? 'stock name' : selectedOption === 'expense' ? 'type of expense' : 'source of income'}`}
-          value={formData.source}
+          name="name"
+          placeholder={`Enter the ${selectedOption === 'stock' ? 'stock name' : selectedOption === 'expense' ? 'source of expense' : 'source of income'}`}
+          value={formData.name}
           {...inputProps}
         />
         <input
@@ -90,6 +118,8 @@ const AddData = () => {
       </>
     );
   };
+
+
 
   return (
     <div className="bg-[#181C3A] text-white rounded-xl p-6 w-[23rem]">

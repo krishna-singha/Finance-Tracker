@@ -1,13 +1,14 @@
 const mongoose = require('mongoose');
 
 const incomeSchema = new mongoose.Schema({
-    source: String,
+    name: String,
     amount: Number,
     date: String,
 }, { _id: false });
 
 const expenseSchema = new mongoose.Schema({
-    type: String,
+    category: String,
+    name: String,
     amount: Number,
     date: String,
 }, { _id: false });

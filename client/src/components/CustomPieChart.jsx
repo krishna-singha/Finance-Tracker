@@ -1,21 +1,54 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import ReactEcharts from 'echarts-for-react';
+import { useRecoilValue } from 'recoil';
+import { userAtom } from '../store/userAtom';
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const StylishPieChart = () => {
-  const data = [
-    { name: 'Shopings', value: 400 },
-    { name: 'Grocery', value: 300 },
-    { name: 'Travels', value: 1700 },
-    { name: 'Books', value: 3300 },
-    { name: 'Stocks', value: 4000 },
-];
+  const user = useRecoilValue(userAtom);
+  const [expense, setExpense] = useState([]);
+
+  useEffect(() => {
+    const getExpenseData = async () => {
+      try {
+        if (user?.uid) {
+          const { data } = await axios.post(`${BACKEND_URL}/v1/api/getData/expense`, {
+            "_id": user.uid,
+          });
+          setExpense(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch expense data:', error);
+      }
+    };
+
+    getExpenseData();
+  }, [user]);
+
+  const processExpensesByCategory = (expenses) => {
+    const categorySum = {};
+
+    expenses.forEach(expenseItem => {
+      const { category, amount } = expenseItem;
+
+      if (categorySum[category]) {
+        categorySum[category] += amount;
+      } else {
+        categorySum[category] = amount;
+      }
+    });
+
+    return Object.keys(categorySum).map(category => ({
+      name: category,
+      value: categorySum[category],
+    }));
+  };
+
+  const processedData = processExpensesByCategory(expense);
 
   const getOption = () => {
-    const processedData = data.map(item => ({
-      value: item.value,
-      name: item.name,
-    }));
-
     return {
       backgroundColor: '#181C3A',
       tooltip: {
