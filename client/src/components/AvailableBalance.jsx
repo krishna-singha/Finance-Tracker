@@ -1,7 +1,17 @@
 import { FaIndianRupeeSign } from "react-icons/fa6";
+import { useRecoilValue } from "recoil";
+import { incomeAtom } from "../store/incomeAtom";
+import { expenseAtom } from "../store/expenseAtom";
 
 const AvailableBalance = () => {
-    const availableBalance = 10000.00;
+    
+    const incomes = useRecoilValue(incomeAtom);
+    const expenses = useRecoilValue(expenseAtom);
+    
+    const totalIncome = incomes.reduce((acc, { amount }) => acc + amount, 0);
+    const totalExpense = expenses.reduce((acc, { amount }) => acc + amount, 0);
+    
+    const availableBalance = totalIncome - totalExpense;
 
     return (
         <div className="h-full bg-red text-white p-6 rounded-2xl font-[600]">

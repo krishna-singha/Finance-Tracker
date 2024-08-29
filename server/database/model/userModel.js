@@ -12,6 +12,15 @@ const expenseSchema = new mongoose.Schema({
     date: String,
 }, { _id: false });
 
+const stockSchema = new mongoose.Schema({
+    name: String,
+    amount: Number,
+    currentPrice: {
+        type: Number,
+        default: 300,
+    },
+}, { _id: false });
+
 const userSchema = new mongoose.Schema({
     _id: {
         type: String,
@@ -31,6 +40,7 @@ const userSchema = new mongoose.Schema({
     },
     incomes: [incomeSchema],
     expenses: [expenseSchema],
+    stocks: [stockSchema],
 }, {
     timestamps: true,
 });

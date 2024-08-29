@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import ReactEcharts from 'echarts-for-react';
 import * as echarts from 'echarts';
 import { useRecoilValue } from 'recoil';
@@ -9,36 +8,31 @@ const LineChart = () => {
   const incomeData = useRecoilValue(incomeAtom);
   const expenseData = useRecoilValue(expenseAtom);
 
-  console.log('Income Data:', incomeData);
-  console.log('Expenses Data:', expenseData);
-
-  // Calculate total amounts by summing income and expenses
-  const totalData = incomeData.map((item, index) => {
-    return {
-      date: item.date,
-      amount: item.amount + (expenseData[index]?.amount || 0),
+  // Function to get all unique dates from income and expense data
+  const getAllUniqueDates = (incomeData, expenseData) => {
+    const allDates = new Set();
+  
+    const addDatesFromData = (data) => {
+      data.forEach(item => {
+        if (item.date) {
+          allDates.add(item.date);
+        }
+      });
     };
-  });
+  
+    addDatesFromData(incomeData);
+    addDatesFromData(expenseData);
+    return Array.from(allDates).sort((a, b) => new Date(a) - new Date(b));
+  };
 
-  // Calculate total slopes (if needed)
-  // const calculateTotalSlopes = (data) => {
-  //   let slopes = [];
-  //   for (let i = 1; i < data.length; i++) {
-  //     const slope = data[i].amount - data[i - 1].amount;
-  //     slopes.push(slope);
-  //   }
-  //   return slopes;
-  // };
+  const allDates = getAllUniqueDates(incomeData, expenseData);
 
-  // const totalSlopes = calculateTotalSlopes(totalData);
-
+  // Function to get chart options
   const getOption = () => {
-    const dates = totalData.map(item => item.date);
-
-    const totalValues = totalData.map(item => item.amount);
-    const incomeValues = incomeData.map(item => item.amount);
-    const expensesValues = expenseData.map(item => item.amount);
-
+    const dates = allDates;
+    const incomeValues = allDates.map(date => incomeData.find(item => item.date === date)?.amount || 0);
+    const expensesValues = allDates.map(date => expenseData.find(item => item.date === date)?.amount || 0);
+  
     return {
       backgroundColor: '#181C3A',
       tooltip: {
@@ -56,10 +50,10 @@ const LineChart = () => {
           });
           return tooltipText;
         },
-        backgroundColor: 'rgba(0, 0, 0, 0.7)', // Make tooltip background semi-transparent
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
       },
       legend: {
-        data: ['Total', 'Income', 'Expenses'],
+        data: ['Income', 'Expenses'],
         textStyle: {
           color: 'white',
           fontSize: 14,
@@ -111,58 +105,32 @@ const LineChart = () => {
       },
       series: [
         {
-          name: 'Total',
-          type: 'line',
-          data: totalValues,
-          smooth: true,
-          lineStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 1, 1, [
-              { offset: 0, color: '#00C49F' },
-              { offset: 1, color: '#0088FE' },
-            ]),
-            width: 3,
-          },
-          itemStyle: {
-            color: '#00C49F',
-            borderColor: '#00C49F',
-            borderWidth: 3,
-          },
-          areaStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: 'rgba(0, 196, 159, 0.3)' },
-              { offset: 1, color: 'rgba(0, 136, 254, 0.1)' },
-            ]),
-          },
-          emphasis: {
-            itemStyle: {
-              color: '#FF6F61',
-              borderColor: '#FF6F61',
-              borderWidth: 3,
-            },
-          },
-          animationDuration: 4000,
-        },
-        {
           name: 'Income',
           type: 'line',
           data: incomeValues,
           smooth: true,
           lineStyle: {
-            color: '#FF6347',
+            color: new echarts.graphic.LinearGradient(0, 0, 1, 1, [
+              { offset: 0, color: '#00FF00' }, // Bright green
+              { offset: 1, color: '#00FF7F' }, // Light green
+            ]),
             width: 3,
           },
           itemStyle: {
-            color: '#FF6347',
-            borderColor: '#FF6347',
+            color: '#00FF00', // Bright green
+            borderColor: '#00FF7F', // Light green
             borderWidth: 3,
           },
           areaStyle: {
-            color: 'rgba(255, 99, 71, 0.2)',
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: 'rgba(0, 255, 0, 0.4)' }, // Light green
+              { offset: 1, color: 'rgba(0, 255, 127, 0.1)' }, // Very light green
+            ]),
           },
           emphasis: {
             itemStyle: {
-              color: '#FF6347',
-              borderColor: '#FF6347',
+              color: '#00FF00', // Bright green
+              borderColor: '#00FF7F', // Light green
               borderWidth: 3,
             },
           },
@@ -174,21 +142,27 @@ const LineChart = () => {
           data: expensesValues,
           smooth: true,
           lineStyle: {
-            color: '#FFD700',
+            color: new echarts.graphic.LinearGradient(0, 0, 1, 1, [
+              { offset: 0, color: '#FF6347' }, // Tomato red
+              { offset: 1, color: '#FF4500' }, // Orange red
+            ]),
             width: 3,
           },
           itemStyle: {
-            color: '#FFD700',
-            borderColor: '#FFD700',
+            color: '#FF6347', // Tomato red
+            borderColor: '#FF4500', // Orange red
             borderWidth: 3,
           },
           areaStyle: {
-            color: 'rgba(255, 215, 0, 0.2)',
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: 'rgba(255, 99, 71, 0.4)' }, // Light tomato red
+              { offset: 1, color: 'rgba(255, 69, 0, 0.1)' }, // Very light orange red
+            ]),
           },
           emphasis: {
             itemStyle: {
-              color: '#FFD700',
-              borderColor: '#FFD700',
+              color: '#FF6347', // Tomato red
+              borderColor: '#FF4500', // Orange red
               borderWidth: 3,
             },
           },
@@ -197,6 +171,7 @@ const LineChart = () => {
       ],
     };
   };
+  
 
   return (
     <div className='h-[30rem] py-8 bg-[#181C3A] rounded-xl'>
