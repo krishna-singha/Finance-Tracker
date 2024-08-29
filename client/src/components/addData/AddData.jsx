@@ -1,10 +1,75 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 const AddData = () => {
   const [selectedOption, setSelectedOption] = useState('income');
 
-  const handleSelectChange = (e) => {
-    setSelectedOption(e.target.value);
+  const handleSelectChange = (e) => setSelectedOption(e.target.value);
+
+  // Common input styles
+  const inputStyle = "bg-[#252839] rounded-md p-2";
+
+  const renderInputs = () => {
+    switch (selectedOption) {
+      case 'income':
+        return (
+          <>
+            <input
+              type="text"
+              placeholder="Enter the source of income"
+              className={inputStyle}
+            />
+            <input
+              type="number"
+              placeholder="Enter the amount"
+              className={inputStyle}
+            />
+            <input
+              type="date"
+              className={inputStyle}
+            />
+          </>
+        );
+      case 'Expenses':
+        return (
+          <>
+            <input
+              type="text"
+              placeholder="Enter the type of expenses"
+              className={inputStyle}
+            />
+            <input
+              type="number"
+              placeholder="Enter the amount"
+              className={inputStyle}
+            />
+            <input
+              type="date"
+              className={inputStyle}
+            />
+          </>
+        );
+      case 'stocks':
+        return (
+          <>
+            <input
+              type="text"
+              placeholder="Enter the stock name"
+              className={inputStyle}
+            />
+            <input
+              type="number"
+              placeholder="Enter the quantity"
+              className={inputStyle}
+            />
+            <input
+              type="date"
+              className={inputStyle}
+            />
+          </>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
@@ -25,60 +90,7 @@ const AddData = () => {
       </div>
       <form>
         <div className="flex flex-col gap-6 w-full mt-6">
-          {selectedOption === 'income' && (
-            <>
-              <input
-                type="text"
-                placeholder="Enter the source of income"
-                className="bg-[#252839] rounded-md p-2"
-              />
-              <input
-                type="number"
-                placeholder="Enter the amount"
-                className="bg-[#252839] rounded-md p-2"
-              />
-              <input
-                type="date"
-                className='bg-[#252839] rounded-md p-2'
-              />
-            </>
-          )}
-          {selectedOption === 'Expenses' && (
-            <>
-              <input
-                type="text"
-                placeholder="Enter the type of expenses"
-                className="bg-[#252839] rounded-md p-2"
-              />
-              <input
-                type="number"
-                placeholder="Enter the amount"
-                className="bg-[#252839] rounded-md p-2"
-              />
-              <input
-                type="date"
-                className='bg-[#252839] rounded-md p-2'
-              />
-            </>
-          )}
-          {selectedOption === 'stocks' && (
-            <>
-              <input
-                type="text"
-                placeholder="Enter the stock name"
-                className="bg-[#252839] rounded-md p-2"
-              />
-              <input
-                type="number"
-                placeholder="Enter the quantity"
-                className="bg-[#252839] rounded-md p-2"
-              />
-              <input
-                type="date"
-                className='bg-[#252839] rounded-md p-2'
-              />
-            </>
-          )}
+          {renderInputs()}
         </div>
         <div className="w-full mt-4">
           <button className="bg-[#3B82F6] text-white px-4 py-2 rounded-md w-full">
