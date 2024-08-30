@@ -6,7 +6,7 @@ const app = express();
 
 // ENV variables
 const PORT = process.env.PORT || 3000;
-const FRONTEND_URL = process.env.FRONTEND_URL;
+const { FRONTEND_URL } = require("./config");
 
 // Import routes and database connection
 const connectToMongoDB = require("./database/connection");

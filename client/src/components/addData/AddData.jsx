@@ -3,7 +3,8 @@ import axios from 'axios';
 import { useRecoilValue } from 'recoil';
 import { userAtom } from '../../store/userAtom';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+// const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+import { BACKEND_URL } from "../../config";
 
 const AddData = () => {
   const user = useRecoilValue(userAtom);
