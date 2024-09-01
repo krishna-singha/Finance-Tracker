@@ -5,6 +5,23 @@ import Error from "./pages/Error"
 import Home from "./pages/Home"
 import SigninPage from "./pages/Signin"
 import SignupPage from "./pages/Signup"
+import AllTransactions from "./pages/AllTransections"
+import { ToastContainer, Bounce } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+const toastConfig  = {
+  position: "bottom-right",
+  autoClose: 5000,
+  hideProgressBar: false,
+  closeOnClick : true,
+  newestOnTop: false,
+  rtl: false,
+  pauseOnFocusLoss : true,
+  pauseOnHover: true,
+  draggable: true,
+  theme: "dark",
+  transition: Bounce,
+};
 
 function App() {
 
@@ -13,12 +30,11 @@ function App() {
       <Routes>
         <Route path="/" element={<Template />}>
         <Route index element={<Home />} />
-        <Route path="/signin" element={<SigninPage />} />
-        <Route path="signup" element={<SignupPage />} />
-
+        <Route path="/all-transactions" element={<AllTransactions />} />
         <Route path="*" element={<Error />} />
         </Route>
       </Routes>
+      <ToastContainer {...toastConfig}/>
     </BrowserRouter>
   )
 }

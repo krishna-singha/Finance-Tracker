@@ -10,7 +10,7 @@ const Navbar = () => {
                 <MdDashboard />
                 Dashboard
             </NavLink>
-            <NavLink to={"/transaction"} className={"flex items-center gap-2 hover:text-[#09C9C8]"}>
+            <NavLink to={"/all-transactions"} className={"flex items-center gap-2 hover:text-[#09C9C8]"}>
                 <GrTransaction />
                 All Transaction
             </NavLink>

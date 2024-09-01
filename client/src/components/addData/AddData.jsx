@@ -2,6 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { useRecoilValue } from 'recoil';
 import { userAtom } from '../../store/userAtom';
+import { toast } from 'react-toastify';
 
 // const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 import { BACKEND_URL } from "../../config";
@@ -18,7 +19,6 @@ const AddData = () => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   const handleSelectChange = (e) => setSelectedOption(e.target.value);
 
@@ -33,10 +33,9 @@ const AddData = () => {
   const handleAddData = async (e) => {
     e.preventDefault();
     if ((selectedOption === 'expense') && !formData.category || !formData.name || !formData.amount || !formData.date) {
-      return setError('All fields are required');
+      return toast.error('All fields are required');
     }
     setLoading(true);
-    setError(null);
 
     try {
       await axios.post(`${BACKEND_URL}/v1/api/addData/${selectedOption}`, {
@@ -48,7 +47,7 @@ const AddData = () => {
           "date": formData.date,
         }
       });
-
+      toast.success('Data added successfully');
       setFormData({
         category: '',
         name: '',
@@ -56,7 +55,7 @@ const AddData = () => {
         date: '',
       });
     } catch (err) {
-      setError('Failed to add data. Please try again.');
+      toast.error('Failed to add data. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -106,7 +105,7 @@ const AddData = () => {
         <input
           type="number"
           name="amount"
-          placeholder="Enter the amount"
+          placeholder={`${selectedOption === 'stock' ? 'Enter the number of stocks' : 'Enter the amount'}`}
           value={formData.amount}
           {...inputProps}
         />
@@ -147,7 +146,6 @@ const AddData = () => {
             {loading ? 'Adding...' : 'Add'}
           </button>
         </div>
-        {error && <p className="text-red-500 mt-4">{error}</p>}
       </form>
     </div>
   );
