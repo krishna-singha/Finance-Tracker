@@ -6,7 +6,6 @@ import { FaIndianRupeeSign } from "react-icons/fa6";
 import { useRecoilValue, useRecoilState } from "recoil";
 import { userAtom } from "../../store/userAtom";
 import { incomeAtom } from '../../store/incomeAtom';
-
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const IncomeGraph = () => {
