@@ -15,16 +15,17 @@ const expenseSchema = new mongoose.Schema({
 
 const stockSchema = new mongoose.Schema({
     name: String,
-    amount: Number,
-    currentPrice: {
+    amount: {
         type: Number,
         default: 300,
     },
+    quantity: Number,
     status: {
         type: String,
         enum: ['hold', 'sold'],
         default: 'hold',
     },
+    date: String,
 }, { _id: false });
 
 const userSchema = new mongoose.Schema({

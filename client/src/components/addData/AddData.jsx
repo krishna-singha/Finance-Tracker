@@ -13,6 +13,7 @@ const AddData = () => {
     category: '',
     name: '',
     amount: '',
+    quantity: '',
     date: '',
   });
 
@@ -30,7 +31,11 @@ const AddData = () => {
 
   const handleAddData = async (e) => {
     e.preventDefault();
-    if ((selectedOption === 'expense') && !formData.category || !formData.name || !formData.amount || !formData.date) {
+    if ((selectedOption === 'expense') && !formData.category
+      || (selectedOption === 'stock') && !formData.quantity
+      || !formData.name
+      || !formData.amount
+      || !formData.date) {
       return toast.error('All fields are required');
     }
     setLoading(true);
@@ -39,9 +44,10 @@ const AddData = () => {
       await axios.post(`${BACKEND_URL}/v1/api/addData/${selectedOption}`, {
         "_id": user.uid,
         [selectedOption]: {
-          ...(selectedOption === "expense" && { "category": formData.category }),  // Include category for expenses
+          ...(selectedOption === "expense" && { "category": formData.category }),
           "name": formData.name,
           "amount": formData.amount,
+          ...(selectedOption === "stock" && { "quantity": formData.quantity }),
           "date": formData.date,
         }
       });
@@ -50,6 +56,7 @@ const AddData = () => {
         category: '',
         name: '',
         amount: '',
+        quantity: '',
         date: '',
       });
     } catch (err) {
@@ -103,10 +110,19 @@ const AddData = () => {
         <input
           type="number"
           name="amount"
-          placeholder={`${selectedOption === 'stock' ? 'Enter the number of stocks' : 'Enter the amount'}`}
+          placeholder={`${selectedOption === 'stock' ? 'Enter total price you invested' : 'Enter the amount'}`}
           value={formData.amount}
           {...inputProps}
         />
+        {selectedOption === 'stock' && (
+          <input
+            type="number"
+            name="quantity"
+            placeholder="Enter the quantity"
+            value={formData.quantity}
+            {...inputProps}
+          />
+        )}
         <input
           type="date"
           name="date"

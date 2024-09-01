@@ -14,6 +14,7 @@ const userRouter = require("./routes/user");
 const apiRouter = require("./routes/api");
 const addDataRouter = require("./routes/addData");
 const getIncomeDataRouter = require("./routes/getData");
+const getAllTransactionsRouter = require("./routes/allTransections");
 
 // Middleware
 app.use(express.json());
@@ -49,6 +50,7 @@ app.use("/v1/user", userRouter);
 app.use("/v1/api", apiRouter);
 app.use("/v1/api/addData", addDataRouter);
 app.use("/v1/api/getData", getIncomeDataRouter);
+app.use("/v1/api/getAllTransactions", getAllTransactionsRouter);
 
 // Start server
 app.listen(PORT, () => {
