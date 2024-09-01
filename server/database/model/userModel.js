@@ -20,12 +20,21 @@ const stockSchema = new mongoose.Schema({
         type: Number,
         default: 300,
     },
+    status: {
+        type: String,
+        enum: ['hold', 'sold'],
+        default: 'hold',
+    },
 }, { _id: false });
 
 const userSchema = new mongoose.Schema({
     _id: {
         type: String,
         required: true,
+    },
+    role: {
+        type: String,
+        default: 'user',
     },
     name: {
         type: String,

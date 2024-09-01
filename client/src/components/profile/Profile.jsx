@@ -3,8 +3,7 @@ import { useRecoilState } from "recoil";
 import { userAtom } from "../../store/userAtom";
 import { signOut, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../auth/firebase";
-// const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-import { BACKEND_URL } from "../../config";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Profile = () => {
 

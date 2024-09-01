@@ -7,8 +7,7 @@ import { useRecoilValue, useRecoilState } from "recoil";
 import { userAtom } from "../../store/userAtom";
 import { incomeAtom } from '../../store/incomeAtom';
 
-// const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-import { BACKEND_URL } from "../../config";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const IncomeGraph = () => {
     const user = useRecoilValue(userAtom);

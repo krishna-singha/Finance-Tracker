@@ -3,9 +3,7 @@ import axios from 'axios';
 import ReactEcharts from 'echarts-for-react';
 import { useRecoilValue } from 'recoil';
 import { userAtom } from '../store/userAtom';
-
-// const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-import { BACKEND_URL } from "../config";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const StylishPieChart = () => {
   const user = useRecoilValue(userAtom);
