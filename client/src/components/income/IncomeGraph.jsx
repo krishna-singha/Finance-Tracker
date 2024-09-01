@@ -47,6 +47,7 @@ const IncomeGraph = () => {
 
     // Total income
     const totalIncome = useMemo(() => processedData.reduce((acc, { amount }) => acc + amount, 0), [processedData]);
+    const formattedIncome = totalIncome.toLocaleString('en-IN');
 
     // Update recoil state
     useEffect(() => {
@@ -118,7 +119,7 @@ const IncomeGraph = () => {
         <div className='rounded-xl px-4 py-4 bg-[#181C3A]'>
             <div className='text-white'>
                 <h2 className='font-bold'>Income</h2>
-                <span className='font-semibold text-[#00FF00]'><FaIndianRupeeSign className='inline-block' />{totalIncome}</span>
+                <span className='font-semibold text-[#00FF00]'><FaIndianRupeeSign className='inline-block' />{formattedIncome}</span>
             </div>
             <div className='h-[6rem]'>
                 <ReactEcharts option={chartOptions} style={{ height: '100%', width: '100%' }} />

@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { MdDashboard } from "react-icons/md";
 import { GrTransaction } from "react-icons/gr";
+import { AiOutlineStock } from "react-icons/ai";
 
 const Navbar = () => {
 
@@ -9,6 +10,10 @@ const Navbar = () => {
             <NavLink to={"/"} className={`flex items-center gap-2 hover:text-[#09C9C8]`}>
                 <MdDashboard />
                 Dashboard
+            </NavLink>
+            <NavLink to={"/stocks"} className={"flex items-center gap-2 hover:text-[#09C9C8]"}>
+                <AiOutlineStock />
+                Stocks
             </NavLink>
             <NavLink to={"/all-transactions"} className={"flex items-center gap-2 hover:text-[#09C9C8]"}>
                 <GrTransaction />

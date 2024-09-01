@@ -3,8 +3,7 @@ import './App.css'
 import Template from "./components/Template"
 import Error from "./pages/Error"
 import Home from "./pages/Home"
-import SigninPage from "./pages/Signin"
-import SignupPage from "./pages/Signup"
+import Stocks from "./pages/Stocks"
 import AllTransactions from "./pages/AllTransections"
 import { ToastContainer, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -30,6 +29,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Template />}>
         <Route index element={<Home />} />
+        <Route path="stocks" element={<Stocks />} />
         <Route path="/all-transactions" element={<AllTransactions />} />
         <Route path="*" element={<Error />} />
         </Route>

@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import axios from 'axios';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -7,23 +8,22 @@ import { userAtom } from '../store/userAtom';
 
 const AllTransactions = () => {
     const user = useRecoilValue(userAtom);
-    // const transactions = [
-    //     { date: '2021-09-10', source: 'Scholarship', amount: 1000, type: 'Income' },
-    //     { date: '2021-09-02', source: 'Freelance', amount: 2000, type: 'Income' },
-    //     { date: '2021-09-07', source: 'Part-time', amount: 3000, type: 'Income' },
-    //     { date: '2021-09-04', source: 'Full-time', amount: 4000, type: 'Income' },
-    //     { date: '2021-09-05', source: 'Internship', amount: 5000, type: 'Income' },
-    //     { date: '2021-09-06', source: 'Shopping', amount: -1500, type: 'Expense' },
-    //     { date: '2021-09-07', source: 'Rent', amount: -2500, type: 'Expense' },
-    //     { date: '2021-09-08', source: 'Groceries', amount: -1800, type: 'Expense' },
-    //     { date: '2021-09-09', source: 'Stock Investment', amount: 5000, type: 'Stock' },
-    //     { date: '2021-09-10', source: 'Dividend', amount: 2000, type: 'Income' },
-    // ];
-
-
+    const navigate = useNavigate();
+    
     const [transactions, setTransactions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [filter, setFilter] = useState('All');
+
+    useEffect(() => {
+        if (!user) {
+            navigate('/');
+        }
+    }, [user, navigate]);
+
     useEffect(() => {
         const getTransactions = async () => {
+            setLoading(true);
             try {
                 const data = await axios.post(`${BACKEND_URL}/v1/api/getAllTransactions`, {
                     "_id": user.uid,
@@ -31,21 +31,34 @@ const AllTransactions = () => {
                 setTransactions(data.data);
             } catch (error) {
                 console.error('Failed to fetch transactions:', error);
+                setError('Failed to load transactions.');
+            } finally {
+                setLoading(false);
             }
         };
         if (user?.uid) {
             getTransactions();
         }
-    }, [user, setTransactions]);
+    }, [user]);
 
-    const sortTransactions = transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+    const sortedTransactions = useMemo(() => {
+        return transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+    }, [transactions]);
 
-    const [filter, setFilter] = useState('All');
+    const filteredTransactions = useMemo(() => {
+        return sortedTransactions.filter(transaction => {
+            if (filter === 'All') return true;
+            return transaction.type === filter;
+        });
+    }, [sortedTransactions, filter]);
 
-    const filteredTransactions = sortTransactions.filter(transaction => {
-        if (filter === 'All') return true;
-        return transaction.type === filter;
-    });
+    if (loading) {
+        return <div className="text-white flex justify-center items-center min-h-screen">Loading transactions...</div>;
+    }
+
+    if (error) {
+        return <div className="text-red-500">{error}</div>;
+    }
 
     return (
         <div className="text-white bg-primary max-w-[1550px] mx-auto min-h-screen my-4 rounded-xl py-6 px-8">
@@ -70,8 +83,8 @@ const AllTransactions = () => {
                         <tr className="font-bold h-12 bg-[#0A0F27]">
                             <th className="px-6 py-4">Date</th>
                             <th className="px-6 py-4 max-w-[40%]">Source / Name</th>
-                            <th className="px-6 py-4">Amount</th>
-                            <th className="px-6 py-4">Type</th>
+                            <th className="px-6 py-4 text-center">Amount</th>
+                            <th className="px-6 py-4 text-center">Type</th>
                         </tr>
                     </thead>
                     <tbody className="text-[0.9rem]">
@@ -83,20 +96,20 @@ const AllTransactions = () => {
                             >
                                 <td className="px-6 py-4">{transaction.date}</td>
                                 <td className="px-6 py-4 max-w-[40%]">{transaction.name}</td>
-                                <td className={`px-6 py-4 ${transaction.type == "expense" || transaction.status == "hold" ? 'text-red-500'
+                                <td className={`px-6 py-4 text-center ${transaction.type == "expense" || transaction.status == "hold" ? 'text-red-500'
                                     : 'text-green-500'}`}>
                                     {transaction.type == "expense" || transaction.status == "hold" ? '-' : ''}
                                     <FaIndianRupeeSign className='inline-block' />
-                                    {Math.abs(transaction.amount)}
+                                    {Math.abs(transaction.amount).toLocaleString('en-IN')}
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="px-6 py-4 flex justify-center">
                                     <div
                                         className={`${transaction.type === 'income'
                                             ? 'bg-teal-500'
                                             : transaction.type === 'expense'
                                                 ? 'bg-rose-500'
                                                 : 'bg-purple-500'
-                                            } w-fit py-1 px-4 text-white  rounded-full`}
+                                            } w-fit py-1 px-4 text-white rounded-full`}
                                     >
                                         {transaction.type}
                                     </div>

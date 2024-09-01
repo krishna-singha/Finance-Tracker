@@ -43,6 +43,7 @@ const Profile = () => {
         try {
             await signOut(auth);
             setUser(null);
+            window.location.reload();
         } catch (error) {
             console.error('Logout error:', error);
         }
