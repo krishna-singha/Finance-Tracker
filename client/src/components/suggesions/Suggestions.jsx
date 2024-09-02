@@ -3,28 +3,37 @@ import StylishBtn from "../StylishBtn";
 import axios from "axios";
 import Markdown from 'react-markdown';
 import { FaLocationArrow } from "react-icons/fa6";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { userAtom } from "../../store/userAtom";
+import { allTransectionAtom } from "../../store/allTransectionAtom";
+import { AIResponseAtom } from "../../store/AIResponseAtom";
+import rehypeSanitize from 'rehype-sanitize';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Suggesions = () => {
-    const [loading, setLoading] = useState(true);
+    const user = useRecoilValue(userAtom);
+    const allTransections = useRecoilValue(allTransectionAtom);
+    const [AIResponse, setAIResponse] = useRecoilState(AIResponseAtom);
+    const [loading, setLoading] = useState(false);
     const [inputValue, setInputValue] = useState("");
-    const [generate, setGenerate] = useState(false);
-    const [suggestions, setSuggestions] = useState(null);
+    const [generate, setGenerate] = useState(AIResponse ? true : false);
 
     const handleGenerate = async () => {
-        if (!inputValue || inputValue.length < 10) return;
+        if (!user) return;
+        if (!inputValue || inputValue.length < 3) return;
         setLoading(true);
         setGenerate(true);
 
         try {
             const response = await axios.post(`${BACKEND_URL}/v1/api/ai`, {
-                prompt: inputValue
+                userPrompt: inputValue,
+                data: allTransections,
             });
-            setSuggestions(response.data.suggestion);
+            setAIResponse(response.data.suggestion);
         } catch (err) {
             console.error("Error fetching suggestions:", err);
-            setSuggestions("Error fetching suggestions.");
+            setAIResponse("Error fetching suggestions.");
         } finally {
             setLoading(false);
         }
@@ -52,9 +61,9 @@ const Suggesions = () => {
                 ) : (
                     <div className="text-white p-4 bg-[#252839] rounded-lg">
                         {loading ? (
-                            <p>Loading...</p>
+                            <p>Loading...</p>  // You can replace this with a spinner or animation
                         ) : (
-                            <Markdown>{suggestions}</Markdown>
+                            <Markdown rehypePlugins={[rehypeSanitize]}>{AIResponse}</Markdown>  // Secure rendering
                         )}
                     </div>
                 )}
@@ -66,8 +75,13 @@ const Suggesions = () => {
                     placeholder="Ask something to AI"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
+                    aria-label="AI Chat Input"
                 />
-                <div onClick={handleGenerate} className="text-white w-fit bg-[#09C9C8] text-xl p-2 rounded-full cursor-pointer">
+                <div 
+                    onClick={handleGenerate} 
+                    className="text-white w-fit bg-[#09C9C8] text-xl p-2 rounded-full cursor-pointer"
+                    aria-label="Send Message"
+                >
                     <FaLocationArrow />
                 </div>
             </div>

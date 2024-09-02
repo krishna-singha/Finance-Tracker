@@ -1,19 +1,17 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaIndianRupeeSign } from "react-icons/fa6";
-import axios from 'axios';
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 import { useRecoilValue } from 'recoil';
 import { userAtom } from '../store/userAtom';
+import { allTransectionAtom } from '../store/allTransectionAtom';
 
 const AllTransactions = () => {
     const user = useRecoilValue(userAtom);
     const navigate = useNavigate();
-    
-    const [transactions, setTransactions] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+
+    const transactions = useRecoilValue(allTransectionAtom);
     const [filter, setFilter] = useState('All');
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!user) {
@@ -22,28 +20,13 @@ const AllTransactions = () => {
     }, [user, navigate]);
 
     useEffect(() => {
-        const getTransactions = async () => {
-            setLoading(true);
-            try {
-                const data = await axios.post(`${BACKEND_URL}/v1/api/getAllTransactions`, {
-                    "_id": user.uid,
-                });
-                setTransactions(data.data);
-            } catch (error) {
-                console.error('Failed to fetch transactions:', error);
-                setError('Failed to load transactions.');
-            } finally {
-                setLoading(false);
-            }
-        };
-        if (user?.uid) {
-            getTransactions();
-        }
-    }, [user]);
+        const timeout = setTimeout(() => setLoading(false), 1000);
+        return () => clearTimeout(timeout);
+    }, []);
 
     const sortedTransactions = useMemo(() => {
-        return transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
-    }, [transactions]);
+        return [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+    }, [transactions]);    
 
     const filteredTransactions = useMemo(() => {
         return sortedTransactions.filter(transaction => {
@@ -54,10 +37,6 @@ const AllTransactions = () => {
 
     if (loading) {
         return <div className="text-white flex justify-center items-center min-h-screen">Loading transactions...</div>;
-    }
-
-    if (error) {
-        return <div className="text-red-500">{error}</div>;
     }
 
     return (
@@ -96,9 +75,9 @@ const AllTransactions = () => {
                             >
                                 <td className="px-6 py-4">{transaction.date}</td>
                                 <td className="px-6 py-4 max-w-[40%]">{transaction.name}</td>
-                                <td className={`px-6 py-4 text-center ${transaction.type == "expense" || transaction.status == "hold" ? 'text-red-500'
+                                <td className={`px-6 py-4 text-center ${transaction.type === "expense" || transaction.status === "hold" ? 'text-red-500'
                                     : 'text-green-500'}`}>
-                                    {transaction.type == "expense" || transaction.status == "hold" ? '-' : ''}
+                                    {transaction.type === "expense" || transaction.status === "hold" ? '-' : ''}
                                     <FaIndianRupeeSign className='inline-block' />
                                     {Math.abs(transaction.amount).toLocaleString('en-IN')}
                                 </td>

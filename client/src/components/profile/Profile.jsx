@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
 import { userAtom } from "../../store/userAtom";
+import axios from "axios";
+import { allTransectionAtom } from "../../store/allTransectionAtom";
 import { signOut, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../auth/firebase";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -9,6 +11,7 @@ const Profile = () => {
 
     const [user, setUser] = useRecoilState(userAtom);
     const [showProfile, setShowProfile] = useState(false);
+    const [transactions, setTransactions] = useRecoilState(allTransectionAtom);
 
     const toggleProfile = () => {
         setShowProfile(!showProfile);
@@ -67,6 +70,23 @@ const Profile = () => {
             userExist();
         }
     }), [user];
+
+    // Fetch all transections
+    useEffect(() => {
+        const getTransactions = async () => {
+            try {
+                const data = await axios.post(`${BACKEND_URL}/v1/api/getAllTransactions`, {
+                    "_id": user.uid,
+                });
+                setTransactions(data.data);
+            } catch (error) {
+                console.error('Failed to fetch transactions:', error);
+            }
+        };
+        if (user?.uid) {
+            getTransactions();
+        }
+    }, [user, setTransactions]);
 
     return (
         <div>
