@@ -50,12 +50,6 @@ body {
     border-radius: 7px;
 }
 
-/* .small-cursor::-webkit-scrollbar-thumb {
-    background: linear-gradient(transparent, #008080);
-    border-radius: 0.25rem;
-} */
-
-
 .greenGrad {
     background: linear-gradient(to right, #31403d, #31403dc4, #31403d);
 }
@@ -64,29 +58,17 @@ body {
     filter: drop-shadow(-5px 0px 5px #31403d);
 }
 
-/* .mainCont::before {
-    content: "";
-    width: 50%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: url('./assets/images/library.jpg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-} */
-
 .navbar .active {
     color: #09C9C8;
 }
+
 .ellipsis-container {
-    width: 100%; 
+    width: 100%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-  
+}
+
 
 .cardShadow {
     box-shadow: 0px 5px 5px #20362fbb;
@@ -97,12 +79,14 @@ body {
     color: white;
     position: absolute;
     top: 50%;
-    z-index: 2; 
+    z-index: 2;
     text-align: center;
 }
+
 .group:hover .tooltip-text {
     opacity: 1;
 }
+
 .group:hover img {
     opacity: 0.2;
 }

@@ -24,16 +24,12 @@ const AllTransactions = () => {
         return () => clearTimeout(timeout);
     }, []);
 
-    const sortedTransactions = useMemo(() => {
-        return [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
-    }, [transactions]);    
-
     const filteredTransactions = useMemo(() => {
-        return sortedTransactions.filter(transaction => {
+        return transactions.filter(transaction => {
             if (filter === 'All') return true;
             return transaction.type === filter;
         });
-    }, [sortedTransactions, filter]);
+    }, [transactions, filter]);
 
     if (loading) {
         return <div className="text-white flex justify-center items-center min-h-screen">Loading transactions...</div>;

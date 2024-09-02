@@ -1,8 +1,8 @@
 import ReactEcharts from 'echarts-for-react';
 import * as echarts from 'echarts';
 import { useRecoilValue } from 'recoil';
-import { incomeAtom } from '../store/incomeAtom';
-import { expenseAtom } from '../store/expenseAtom';
+import { incomeAtom } from '../../store/incomeAtom';
+import { expenseAtom } from '../../store/expenseAtom';
 
 const LineChart = () => {
   const incomeData = useRecoilValue(incomeAtom);

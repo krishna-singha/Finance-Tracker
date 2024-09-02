@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import ReactEcharts from 'echarts-for-react';
 import { useRecoilValue } from 'recoil';
-import { userAtom } from '../store/userAtom';
+import { userAtom } from '../../store/userAtom';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-const StylishPieChart = () => {
+const ExpensesPieChart = () => {
   const user = useRecoilValue(userAtom);
   const [expense, setExpense] = useState([]);
 
@@ -96,4 +96,4 @@ const StylishPieChart = () => {
   );
 };
 
-export default StylishPieChart;
+export default ExpensesPieChart;

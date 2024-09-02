@@ -78,7 +78,8 @@ const Profile = () => {
                 const data = await axios.post(`${BACKEND_URL}/v1/api/getAllTransactions`, {
                     "_id": user.uid,
                 });
-                setTransactions(data.data);
+                const sortedTransactions = data.data.sort((a, b) => new Date(b.date) - new Date(a.date));
+                setTransactions(sortedTransactions);
             } catch (error) {
                 console.error('Failed to fetch transactions:', error);
             }

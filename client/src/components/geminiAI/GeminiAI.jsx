@@ -1,17 +1,18 @@
 import { useState } from "react";
 import StylishBtn from "../StylishBtn";
 import axios from "axios";
-import Markdown from 'react-markdown';
 import { FaLocationArrow } from "react-icons/fa6";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { userAtom } from "../../store/userAtom";
 import { allTransectionAtom } from "../../store/allTransectionAtom";
 import { AIResponseAtom } from "../../store/AIResponseAtom";
+import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
+import rehypeRaw from 'rehype-raw';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-const Suggesions = () => {
+const GeminiAI = () => {
     const user = useRecoilValue(userAtom);
     const allTransections = useRecoilValue(allTransectionAtom);
     const [AIResponse, setAIResponse] = useRecoilState(AIResponseAtom);
@@ -30,6 +31,7 @@ const Suggesions = () => {
                 userPrompt: inputValue,
                 data: allTransections,
             });
+            console.log(response.data.suggestion);
             setAIResponse(response.data.suggestion);
         } catch (err) {
             console.error("Error fetching suggestions:", err);
@@ -46,29 +48,38 @@ const Suggesions = () => {
                 <StylishBtn text="BETA" />
             </div>
             <div className={`h-[27rem] my-4 px-4 overflow-y-scroll overflow-x-clip small-cursor`}>
-                {!generate ? (
+                {!user ? (
                     <div className="text-white p-4 bg-[#252839] rounded-lg">
-                        <h2 className="text-lg font-semibold mb-2">How can I assist you today?</h2>
-                        <p className="mb-4">Feel free to ask me anything related to your financial needs. Here are some examples:</p>
-                        <ul className="list-disc pl-5">
-                            <li className="mb-2">📈 Provide financial advice on your current portfolio</li>
-                            <li className="mb-2">📊 Offer guidance on managing your stocks</li>
-                            <li className="mb-2">💸 Suggest ways to save on everyday expenses</li>
-                            <li className="mb-2">📅 Help with budgeting and expense tracking</li>
-                        </ul>
-                        <p className="mt-4">Simply type your question or request into the input field below!</p>
+                        <h2 className="text-lg font-semibold mb-2">Hello! Welcome</h2>
+                        <p className="mb-4">Please sign in to start chatting with our AI assistant.</p>
                     </div>
-                ) : (
-                    <div className="text-white p-4 bg-[#252839] rounded-lg">
-                        {loading ? (
-                            <p>Loading...</p>  // You can replace this with a spinner or animation
-                        ) : (
-                            <Markdown rehypePlugins={[rehypeSanitize]}>{AIResponse}</Markdown>  // Secure rendering
-                        )}
-                    </div>
-                )}
+                )
+                    :
+                    (!generate ? (
+                        <div className="text-white p-4 bg-[#252839] rounded-lg">
+                            <h2 className="text-lg font-semibold mb-2">How can I assist you today?</h2>
+                            <p className="mb-4">Feel free to ask me anything related to your financial needs. Here are some examples:</p>
+                            <ul className="list-disc pl-5">
+                                <li className="mb-2">📈 Provide financial advice on your current portfolio</li>
+                                <li className="mb-2">📊 Offer guidance on managing your stocks</li>
+                                <li className="mb-2">💸 Suggest ways to save on everyday expenses</li>
+                                <li className="mb-2">📅 Help with budgeting and expense tracking</li>
+                            </ul>
+                            <p className="mt-4">Simply type your question or request into the input field below!</p>
+                        </div>
+                    ) : (
+                        <div className="p-4 text-white bg-[#252839] rounded-lg">
+                            {loading ? (
+                                <p>Loading...</p>
+                            ) : (
+                                <ReactMarkdown rehypePlugins={[rehypeRaw, rehypeSanitize]}>
+                                    {AIResponse}
+                                </ReactMarkdown>
+                            )}
+                        </div>
+                    ))}
             </div>
-            <div className="flex items-center bg-[#252839] py-1 pl-4 pr-2 rounded-full w-[93%] mx-auto">
+            <div className="flex items-center gap-2 bg-[#252839] py-1 pl-4 pr-2 rounded-full w-[93%] mx-auto">
                 <input
                     type="text"
                     className="w-full bg-transparent focus:outline-none text-white"
@@ -77,8 +88,8 @@ const Suggesions = () => {
                     onChange={(e) => setInputValue(e.target.value)}
                     aria-label="AI Chat Input"
                 />
-                <div 
-                    onClick={handleGenerate} 
+                <div
+                    onClick={handleGenerate}
                     className="text-white w-fit bg-[#09C9C8] text-xl p-2 rounded-full cursor-pointer"
                     aria-label="Send Message"
                 >
@@ -89,4 +100,4 @@ const Suggesions = () => {
     );
 };
 
-export default Suggesions;
+export default GeminiAI;

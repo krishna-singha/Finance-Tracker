@@ -1,4 +1,3 @@
-import React from 'react';
 import { MdDateRange } from 'react-icons/md';
 
 const CurrentDate = () => {

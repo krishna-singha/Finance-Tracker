@@ -1,11 +1,11 @@
 import AvailableBalance from "../components/AvailableBalance";
-import CustomPieChart from "../components/CustomPieChart";
-import LineChart from "../components/LineChart";
+import ExpensesPieChart from "../components/chart/ExpensesPieChart";
+import LineChart from "../components/chart/LineChart";
 import IncomeGraph from "../components/income/IncomeGraph";
 import ExpensesGraph from "../components/expenses/ExpensesGraph";
 import TopThreeStocks from "../components/stocks/Stocks";
 import AddData from "../components/addData/AddData";
-import Suggesions from "../components/suggesions/Suggestions";
+import GeminiAI from "../components/geminiAI/GeminiAI";
 
 const Home = () => {
 
@@ -49,10 +49,10 @@ const Home = () => {
                     </div>
                     <div className="w-[32rem]">
                         <div className=" mb-6">
-                            <Suggesions />
+                            <GeminiAI />
                         </div>
                         <div>
-                            <CustomPieChart />
+                            <ExpensesPieChart />
                         </div>
                     </div>
                 </div>
