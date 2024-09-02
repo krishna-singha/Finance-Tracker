@@ -30,16 +30,16 @@ app.use(cors(
         optionsSuccessStatus: 204,
     }
 ));
-// app.use("/v1", (req, res, next) => {
-//     if (req.headers.origin === FRONTEND_URL) {
-//         next();
-//     } else {
-//         res.status(403).json({
-//             error: "Invalid Origin Access",
-//             message: `You are not authorized to make this request. Please use ${FRONTEND_URL} to make requests.`,
-//         });
-//     }
-// });
+app.use("/v1", (req, res, next) => {
+    if (req.headers.origin === FRONTEND_URL) {
+        next();
+    } else {
+        res.status(403).json({
+            error: "Unauthorized",
+            message: `Sorry, you are not allowed to access this API.`,
+        });
+    }
+});
 
 // Connect to MongoDB
 connectToMongoDB();

@@ -45,7 +45,7 @@ const GeminiAI = () => {
         <div className='bg-[#181C3A] rounded-xl py-4 px-2 w-full h-[36rem] relative'>
             <h1 className="text-center text-[#09C9C8]">Chat with AI</h1>
             <div className="absolute top-3 right-3 text-[#09C9C8]">
-                <StylishBtn text="BETA" />
+                <StylishBtn text="BETA 1.1" />
             </div>
             <div className={`h-[27rem] my-4 px-4 overflow-y-scroll overflow-x-clip small-cursor`}>
                 {!user ? (
