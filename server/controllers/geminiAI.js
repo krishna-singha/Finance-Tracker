@@ -4,7 +4,7 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const handleGenerateText = async (req, res) => {
     const { userPrompt, data } = req.body;
-    
+
     // const data = [
     //     { date: "2024-09-03", name: "Tata", amount: 10000, quantity: 7, type: "stock", status: "hold" },
     //     { date: "2024-09-02", name: "Scholarship", amount: 20000, type: "income" },
@@ -23,9 +23,11 @@ const handleGenerateText = async (req, res) => {
     try {
         const prompt = `
             Here is the data of the particular user transactions:
-            ${data.map((ele) => {
+            ${data.map((ele, index) => {
             return (
-                `   Date: ${ele.date}, 
+                `   
+                    Transection ${index + 1}
+                    Date: ${ele.date}, 
                     Type: ${ele.type},
                     ${ele.type === "stock" ? "Stock Name" : "Source"}: ${ele.name}, 
                     ${ele.type === "expense" ? `Category: ${ele.category}` : ''}, 
@@ -34,7 +36,8 @@ const handleGenerateText = async (req, res) => {
                     : ele.type == "stock" && ele.status == "sold"
                         ? "Sold amount"
                         : "Amount"}: ${ele.amount}, 
-                    ${ele.type === "stock" ? `Quantity: ${ele.quantity}` : ''}`
+                    ${ele.type === "stock" ? `Quantity: ${ele.quantity}` : ''}
+                `
             );
         }).join("\n")}
             
@@ -45,7 +48,7 @@ const handleGenerateText = async (req, res) => {
 
             Other than that, simply generate that I can assist you with only financial related queries.
 
-            Make sure to format the response clearly in markdown with bullet points, headings, or other relevant formatting to enhance readability.
+            Make sure to format the response clearly in markdown with bullet points, headings, with <br> tag for more good lookin ui or other relevant formatting to enhance readability.
             
             Here's the format you can follow:
             <br>
