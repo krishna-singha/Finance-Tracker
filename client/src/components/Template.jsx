@@ -13,7 +13,7 @@ const Template = () => {
         <>
             {isCompatible ? (
                 <div className="bg-primary text-white text-center py-2 min-h-screen flex justify-center items-center">
-                    <p>Window size is not compatible</p>
+                    <p>Window size is not compatible <br /> Use your Laptop!</p>
                 </div>
             ) : (
                 <>
