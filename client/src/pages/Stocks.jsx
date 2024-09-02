@@ -6,14 +6,17 @@ import axios from 'axios';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 import { useRecoilValue } from 'recoil';
 import { userAtom } from '../store/userAtom';
+import CustomModal from '../components/CustomModal';
+import { toast } from 'react-toastify';
 
 const Stocks = () => {
     const user = useRecoilValue(userAtom);
     const navigate = useNavigate();
     const [stocks, setStocks] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const [filter, setFilter] = useState('hold');
+    const [isModalOpen, setModalOpen] = useState(false);
+    const [selectedStock, setSelectedStock] = useState(null);
 
     useEffect(() => {
         if (!user) {
@@ -31,7 +34,6 @@ const Stocks = () => {
                 setStocks(data.data);
             } catch (error) {
                 console.error('Failed to fetch stocks:', error);
-                setError('Failed to load stocks.');
             } finally {
                 setLoading(false);
             }
@@ -52,16 +54,33 @@ const Stocks = () => {
         });
     }, [sortedStocks, filter]);
 
-    const handleOption = () => {
-        alert("Options not implemented yet");
-    }
+    const handleOption = (selectedStock) => {
+        setModalOpen(true);
+        setSelectedStock(selectedStock);
+    };
+    const handleSubmit = async (sellingPrice, quantity, stock) => {
+        try {
+            const data = await axios.post(`${BACKEND_URL}/v1/api/sellStock`, {
+                _id: user.uid,
+                stockName: stock.name,
+                sellingPrice,
+                stockQuantity: quantity,
+            });
+            if (data.status === 200) {
+                toast.success('Stock sold successfully!');
+                setModalOpen(false);
+                setSelectedStock(null);
+            } else {
+                toast.error('Failed to sell stock.');
+            }
+        } catch (error) {
+            toast.error('Failed to sell stock.');
+        }
+    };
+
 
     if (loading) {
         return <div className="text-white flex justify-center items-center min-h-screen">Loading stocks...</div>;
-    }
-
-    if (error) {
-        return <div className="text-red-500">{error}</div>;
     }
 
     return (
@@ -111,7 +130,12 @@ const Stocks = () => {
                                 <td className="px-6 py-4 text-center">{stock.quantity}</td>
                                 {filter === "hold" && (
                                     <td className="pr-6 w-[2%]">
-                                        <BsThreeDots className='cursor-pointer text-xl' onClick={handleOption} />
+                                        <BsThreeDots className='cursor-pointer text-xl' onClick={() => handleOption(stock)} />
+                                        <CustomModal
+                                            isOpen={isModalOpen}
+                                            onClose={() => setModalOpen(false)}
+                                            onSubmit={(sellingPrice, quantity) => handleSubmit(sellingPrice, quantity, selectedStock)}
+                                        />
                                     </td>
                                 )}
                             </tr>

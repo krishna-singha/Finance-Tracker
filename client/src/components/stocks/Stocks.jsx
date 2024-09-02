@@ -16,7 +16,8 @@ const TopThreeStocks = () => {
                 const data = await axios.post(`${BACKEND_URL}/v1/api/getStocks`, {
                     "_id": user.uid,
                 });
-                setStocks(data.data);
+                const stocks = data.data.filter((stock) => stock.status === "hold");
+                setStocks(stocks);
             } catch (error) {
                 console.error('Failed to fetch stocks:', error);
             }

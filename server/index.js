@@ -17,6 +17,7 @@ const getIncomeDataRouter = require("./routes/getData");
 const getAllTransactionsRouter = require("./routes/allTransections");
 const getStocksRouter = require("./routes/getStocks");
 const geminiRouter = require("./routes/geminiAI");
+const sellStockRouter = require("./routes/sellStock");
 
 // Middleware
 app.use(express.json());
@@ -55,6 +56,7 @@ app.use("/v1/api/getData", getIncomeDataRouter);
 app.use("/v1/api/getAllTransactions", getAllTransactionsRouter);
 app.use("/v1/api/getStocks", getStocksRouter);
 app.use("/v1/api/ai", geminiRouter);
+app.use("/v1/api/sellStock", sellStockRouter);
 
 // Start server
 app.listen(PORT, () => {
