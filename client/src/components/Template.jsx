@@ -7,13 +7,13 @@ import Profile from "./profile/Profile";
 
 const Template = () => {
 
-    const isCompatible = useMediaQuery({ maxWidth: 1500 });
+    const isCompatible = useMediaQuery({ maxWidth: 1450 });
 
     return (
         <>
             {isCompatible ? (
                 <div className="bg-primary text-white text-center py-2 min-h-screen flex justify-center items-center">
-                    <p>Window size is not compatible <br /> Use your Laptop!</p>
+                    <p>Window size is not compatible <br /> Use your Laptop! else decrease your browser width</p>
                 </div>
             ) : (
                 <>
