@@ -1,64 +1,49 @@
-const dotenv = require("dotenv");
-dotenv.config();
-const express = require("express");
-const cors = require("cors");
+import "dotenv/config";
+import express from "express";
+import cors from "cors";
+import connectToMongoDB from "./connection/index.js";
+import userRoutes from "./routes/userRoutes.js";
+import transactionRoutes from "./routes/transactionRoutes.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
+import budgetRoutes from "./routes/budgetRoutes.js";
+import goalRoutes from "./routes/goalRoutes.js";
+import aiRoutes from "./routes/aiRoutes.js";
+
+const PORT = process.env.PORT || 8000;
+
+// Create express app and HTTP server
 const app = express();
 
-// ENV variables
-const PORT = process.env.PORT || 3000;
-const FRONTEND_URL = process.env.FRONTEND_URL;
-
-// Import routes and database connection
-const connectToMongoDB = require("./database/connection");
-const userRouter = require("./routes/user");
-const apiRouter = require("./routes/api");
-const addDataRouter = require("./routes/addData");
-const getIncomeDataRouter = require("./routes/getData");
-const getAllTransactionsRouter = require("./routes/allTransections");
-const getStocksRouter = require("./routes/getStocks");
-const geminiRouter = require("./routes/geminiAI");
-const sellStockRouter = require("./routes/sellStock");
-
 // Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cors(
-    {
-        origin: FRONTEND_URL,
-        methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-        preflightContinue: false,
-        optionsSuccessStatus: 204,
-    }
-));
-app.use("/v1", (req, res, next) => {
-    if (req.headers.origin === FRONTEND_URL) {
-        next();
-    } else {
-        res.status(403).json({
-            error: "Unauthorized",
-            message: `Sorry, you are not allowed to access this API.`,
-        });
-    }
-});
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  })
+);
+app.use(express.json({ limit: "2mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-// Connect to MongoDB
-connectToMongoDB();
+// Health check
+app.get("/api", (_req, res) => {
+  res.status(200).send("Server is live");
+});
 
 // Routes
-app.get("/", (req, res) => {
-    return res.send("Server is running...");
-}
-);
-app.use("/v1/user", userRouter);
-app.use("/v1/api", apiRouter);
-app.use("/v1/api/addData", addDataRouter);
-app.use("/v1/api/getData", getIncomeDataRouter);
-app.use("/v1/api/getAllTransactions", getAllTransactionsRouter);
-app.use("/v1/api/getStocks", getStocksRouter);
-app.use("/v1/api/ai", geminiRouter);
-app.use("/v1/api/sellStock", sellStockRouter);
+app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/transactions", transactionRoutes);
+app.use("/api/v1/categories", categoryRoutes);
+app.use("/api/v1/budgets", budgetRoutes);
+app.use("/api/v1/goals", goalRoutes);
+app.use("/api/v1/ai", aiRoutes);
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+connectToMongoDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Failed to connect to the database:", error);
+    process.exit(1);
+  });
