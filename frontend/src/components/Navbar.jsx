@@ -1,16 +1,33 @@
 import { useState } from "react";
-import { FaWallet, FaUser, FaSignOutAlt, FaBars, FaTimes, FaHome, FaChartLine, FaMoneyBill, FaPiggyBank, FaBullseye, FaListAlt, FaUserCircle } from "react-icons/fa";
+import {
+  FaWallet,
+  FaUser,
+  FaSignOutAlt,
+  FaBars,
+  FaTimes,
+  FaHome,
+  FaChartLine,
+  FaMoneyBill,
+  FaPiggyBank,
+  FaBullseye,
+  FaListAlt,
+  FaUserCircle,
+} from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { FaSliders } from "react-icons/fa6";
+
+import Filters from "./Filters";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     setIsMobileMenuOpen(false);
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   const toggleMobileMenu = () => {
@@ -18,14 +35,9 @@ const Navbar = () => {
   };
 
   const navItems = [
-    // { to: "/dashboard", label: "Dashboard", icon: <FaHome /> },
-    { to: "/expenses", label: "Expenses", icon: <FaMoneyBill /> },
-    { to: "/incomes", label: "Incomes", icon: <FaChartLine /> },
     { to: "/budgets", label: "Budgets", icon: <FaPiggyBank /> },
     { to: "/goals", label: "Goals", icon: <FaBullseye /> },
     { to: "/all-transactions", label: "All Transactions", icon: <FaListAlt /> },
-    { to: "/analytics", label: "Analytics", icon: <FaChartLine /> },
-    // { to: "/profile", label: "Profile", icon: <FaUserCircle /> },
   ];
 
   return (
@@ -37,12 +49,14 @@ const Navbar = () => {
             <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg group-hover:scale-110 transition-transform">
               <FaWallet className="text-xl text-white" />
             </div>
-            <span className="text-xl font-bold text-white hidden sm:block">Finance Tracker</span>
+            <span className="text-xl font-bold text-white hidden sm:block">
+              Finance Tracker
+            </span>
           </NavLink>
 
           {/* Desktop Navigation */}
           {user && (
-            <div className="hidden lg:flex items-center space-x-1">
+            <div className="hidden lg:flex items-center space-x-1 relative">
               {navItems.map((item) => (
                 <NavLink
                   key={item.to}
@@ -50,8 +64,8 @@ const Navbar = () => {
                   className={({ isActive }) =>
                     `flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                       isActive
-                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                        : 'text-gray-300 hover:text-white hover:bg-slate-800/50'
+                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                        : "text-gray-300 hover:text-white hover:bg-slate-800/50"
                     }`
                   }
                 >
@@ -59,6 +73,19 @@ const Navbar = () => {
                   <span className="text-sm">{item.label}</span>
                 </NavLink>
               ))}
+              <div
+                onClick={() => setFiltersOpen(!filtersOpen)}
+                className="text-gray-300 flex gap-2 items-center cursor-pointer hover:bg-slate-800/50 rounded-lg px-4 py-2 transition-colors"
+              >
+                Filters
+                <FaSliders size={14} />
+              </div>
+              {filtersOpen && (
+                <Filters
+                  filtersOpen={filtersOpen}
+                  setFiltersOpen={setFiltersOpen}
+                />
+              )}
             </div>
           )}
 
@@ -67,31 +94,31 @@ const Navbar = () => {
             {user ? (
               <>
                 {/* User Info - Desktop */}
-                <NavLink to={"/profile"} className="hidden md:flex items-center gap-3 bg-slate-800/50 rounded-lg px-4 py-2 cursor-pointer">
+                <NavLink
+                  to={"/profile"}
+                  className="hidden md:flex items-center gap-3 bg-slate-800/50 rounded-lg px-4 py-2 cursor-pointer"
+                >
                   <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                    {user.name?.charAt(0)?.toUpperCase() || "U"}
                   </div>
                   <div className="hidden lg:block">
-                    <p className="text-white text-sm font-medium">{user.name}</p>
+                    <p className="text-white text-sm font-medium">
+                      {user.name}
+                    </p>
                     {/* <p className="text-gray-400 text-xs">{user.email}</p> */}
                   </div>
                 </NavLink>
-
-                {/* Logout Button - Desktop */}
-                {/* <button
-                  onClick={handleLogout}
-                  className="hidden md:flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 transform hover:scale-105"
-                >
-                  <FaSignOutAlt />
-                  <span className="hidden lg:block">Logout</span>
-                </button> */}
 
                 {/* Mobile Menu Button */}
                 <button
                   onClick={toggleMobileMenu}
                   className="lg:hidden p-2 rounded-lg text-gray-300 hover:text-white hover:bg-slate-800/50 transition-colors"
                 >
-                  {isMobileMenuOpen ? <FaTimes className="text-xl" /> : <FaBars className="text-xl" />}
+                  {isMobileMenuOpen ? (
+                    <FaTimes className="text-xl" />
+                  ) : (
+                    <FaBars className="text-xl" />
+                  )}
                 </button>
               </>
             ) : (
@@ -120,7 +147,7 @@ const Navbar = () => {
               {/* Mobile User Info */}
               <div className="flex items-center gap-3 bg-slate-800/50 rounded-lg p-4 mb-4">
                 <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                  {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                  {user.name?.charAt(0)?.toUpperCase() || "U"}
                 </div>
                 <div>
                   <p className="text-white font-medium">{user.name}</p>
@@ -137,8 +164,8 @@ const Navbar = () => {
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
                       isActive
-                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                        : 'text-gray-300 hover:text-white hover:bg-slate-800/50'
+                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+                        : "text-gray-300 hover:text-white hover:bg-slate-800/50"
                     }`
                   }
                 >

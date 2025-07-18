@@ -1,279 +1,303 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { apiEndpoints, fetchWithAuth } from '../utils/api';
-import { FaSearch, FaFilter, FaArrowUp, FaArrowDown, FaSpinner, FaEdit, FaTrash } from 'react-icons/fa';
-import { FaIndianRupeeSign } from 'react-icons/fa6';
+import { useState, useEffect } from "react";
+import { useData } from "../contexts/DataContext";
+import { FaSearch, FaArrowUp, FaArrowDown } from "react-icons/fa";
+import { FaIndianRupeeSign } from "react-icons/fa6";
+import ExpenseModal from "../modals/Expense.Modal";
+import IncomeModal from "../modals/Income.Modal";
+import { IoCreateOutline, IoTrashOutline } from "react-icons/io5";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const AllTransactions = () => {
-    const { token } = useAuth();
-    const [transactions, setTransactions] = useState([]);
-    const [filteredTransactions, setFilteredTransactions] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterType, setFilterType] = useState('all');
-    const [sortBy, setSortBy] = useState('date');
-    const [sortOrder, setSortOrder] = useState('desc');
+  const [filtered, setFiltered] = useState([]);
+  const [search, setSearch] = useState("");
+  const [type, setType] = useState("all");
+  const [sortBy, setSortBy] = useState("date");
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [showModal, setShowModal] = useState("");
+  const [editing, setEditing] = useState(null);
 
-    useEffect(() => {
-        fetchTransactions();
-    }, [token]);
+  const { data, fetchTransections } = useData();
 
-    useEffect(() => {
-        filterAndSortTransactions();
-    }, [transactions, searchTerm, filterType, sortBy, sortOrder]);
+  useEffect(() => {
+    let result = [...data];
 
-    const fetchTransactions = async () => {
-        try {
-            setLoading(true);
-            const response = await fetchWithAuth(apiEndpoints.transactions);
-            const data = await response.json();
-            setTransactions(data.transactions || data || []);
-        } catch (error) {
-            console.error('Error fetching transactions:', error);
-            // Silently handle errors - don't show toast for empty data
-        } finally {
-            setLoading(false);
-        }
-    };
+    if (search)
+      result = result.filter(
+        (t) =>
+          t.note?.toLowerCase().includes(search.toLowerCase()) ||
+          t.categoryId?.name?.toLowerCase().includes(search.toLowerCase())
+      );
 
-    const filterAndSortTransactions = () => {
-        let filtered = [...transactions];
+    if (type !== "all") result = result.filter((t) => t.type === type);
 
-        // Apply search filter
-        if (searchTerm) {
-            filtered = filtered.filter(t => 
-                t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                t.category.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
+    result.sort((a, b) => {
+      const aVal = sortBy === "amount" ? a.amount : new Date(a.date);
+      const bVal = sortBy === "amount" ? b.amount : new Date(b.date);
+      return sortOrder === "asc" ? aVal - bVal : bVal - aVal;
+    });
 
-        // Apply type filter
-        if (filterType !== 'all') {
-            filtered = filtered.filter(t => t.type === filterType);
-        }
+    setFiltered(result);
+  }, [data, search, type, sortBy, sortOrder]);
 
-        // Apply sorting
-        filtered.sort((a, b) => {
-            let aValue, bValue;
-            
-            switch (sortBy) {
-                case 'amount':
-                    aValue = a.amount;
-                    bValue = b.amount;
-                    break;
-                case 'category':
-                    aValue = a.category.toLowerCase();
-                    bValue = b.category.toLowerCase();
-                    break;
-                case 'date':
-                default:
-                    aValue = new Date(a.date);
-                    bValue = new Date(b.date);
-                    break;
-            }
+  const formatAmount = (amt) => new Intl.NumberFormat("en-IN").format(amt);
+  const formatDate = (date) =>
+    new Date(date).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
 
-            if (sortOrder === 'asc') {
-                return aValue > bValue ? 1 : -1;
-            } else {
-                return aValue < bValue ? 1 : -1;
-            }
-        });
+  const downloadCSV = () => {
+    if (!filtered.length) return;
 
-        setFilteredTransactions(filtered);
-    };
+    const headers = ["Date", "Description", "Category", "Type", "Amount"];
+    const rows = filtered.map((t) => [
+      formatDate(t.date),
+      t.note || "No description",
+      t.categoryId?.name || "Uncategorized",
+      t.type,
+      t.amount,
+    ]);
 
-    const handleDeleteTransaction = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this transaction?')) return;
+    const csv = [headers, ...rows]
+      .map((row) =>
+        row.map((field) => `"${String(field).replace(/"/g, '""')}"`).join(",")
+      )
+      .join("\n");
 
-        try {
-            const response = await fetchWithAuth(apiEndpoints.transactionById(id), {
-                method: 'DELETE'
-            });
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
 
-            setTransactions(transactions.filter(t => t._id !== id));
-        } catch (error) {
-            console.error('Error deleting transaction:', error);
-        }
-    };
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "transactions.csv";
+    link.click();
+  };
 
-    const formatAmount = (amount) => {
-        return new Intl.NumberFormat('en-IN').format(amount);
-    };
+  const handleEdit = (transaction) => {
+    setEditing(transaction);
+    setShowModal(transaction.type === "income" ? "income" : "expense");
+  };
 
-    const formatDate = (date) => {
-        return new Date(date).toLocaleDateString('en-IN', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-        });
-    };
-
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-                <div className="text-center">
-                    <FaSpinner className="animate-spin text-4xl text-purple-400 mx-auto mb-4" />
-                    <p className="text-white">Loading transactions...</p>
-                </div>
-            </div>
-        );
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this transaction?"))
+      return;
+    try {
+      await axios.delete(`/api/v1/transactions/${id}`);
+      toast.success("Transaction deleted successfully");
+      setFiltered((prev) => prev.filter((t) => t._id !== id));
+      // Optionally, you can also refetch transactions here
+      fetchTransections();
+    } catch (error) {
+      toast.error("Failed to delete transaction");
+      console.error("Error deleting transaction:", error);
     }
+  };
 
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
-            <div className="max-w-6xl mx-auto">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-white mb-2">All Transactions</h1>
-                    <p className="text-gray-300">Complete history of your financial transactions</p>
-                </div>
+  return (
+    <div className="p-6">
+      <div className="max-w-7xl w-full mx-auto flex flex-col space-y-6">
+        <div className="flex justify-between items-center mb-16">
+          <div>
+            <h1 className="text-3xl font-bold">Transactions</h1>
+            <p className="text-gray-400">
+              Manage and view all your financial transactions in one place.{" "}
+            </p>
+          </div>
+          <div>
+            <button
+              onClick={() => setShowModal("income")}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow cursor-pointer"
+            >
+              + Add Income
+            </button>
 
-                {/* Filters and Search */}
-                <div className="bg-white/10 backdrop-blur-lg rounded-lg p-6 shadow-lg mb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        {/* Search */}
-                        <div className="relative">
-                            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search transactions..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 bg-white/20 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                            />
-                        </div>
-
-                        {/* Type Filter */}
-                        <select
-                            value={filterType}
-                            onChange={(e) => setFilterType(e.target.value)}
-                            className="px-4 py-2 bg-white/20 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        >
-                            <option value="all">All Types</option>
-                            <option value="income">Income</option>
-                            <option value="expense">Expenses</option>
-                        </select>
-
-                        {/* Sort By */}
-                        <select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value)}
-                            className="px-4 py-2 bg-white/20 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        >
-                            <option value="date">Sort by Date</option>
-                            <option value="amount">Sort by Amount</option>
-                            <option value="category">Sort by Category</option>
-                        </select>
-
-                        {/* Sort Order */}
-                        <button
-                            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
-                        >
-                            {sortOrder === 'asc' ? <FaArrowUp /> : <FaArrowDown />}
-                            {sortOrder === 'asc' ? 'Ascending' : 'Descending'}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Summary Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <div className="bg-white/10 backdrop-blur-lg rounded-lg p-6 shadow-lg">
-                        <p className="text-gray-400 text-sm">Total Transactions</p>
-                        <p className="text-2xl font-bold text-white">{filteredTransactions.length}</p>
-                    </div>
-                    <div className="bg-white/10 backdrop-blur-lg rounded-lg p-6 shadow-lg">
-                        <p className="text-gray-400 text-sm">Total Income</p>
-                        <div className="flex items-center gap-1 text-green-400 text-2xl font-bold">
-                            <FaIndianRupeeSign className="text-lg" />
-                            {formatAmount(filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0))}
-                        </div>
-                    </div>
-                    <div className="bg-white/10 backdrop-blur-lg rounded-lg p-6 shadow-lg">
-                        <p className="text-gray-400 text-sm">Total Expenses</p>
-                        <div className="flex items-center gap-1 text-red-400 text-2xl font-bold">
-                            <FaIndianRupeeSign className="text-lg" />
-                            {formatAmount(filteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0))}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Transactions Table */}
-                <div className="bg-white/10 backdrop-blur-lg rounded-lg shadow-lg overflow-hidden">
-                    {filteredTransactions.length === 0 ? (
-                        <div className="p-8 text-center">
-                            <p className="text-gray-400">No transactions found</p>
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead className="bg-white/5">
-                                    <tr>
-                                        <th className="px-6 py-4 text-left text-gray-300 font-semibold">Date</th>
-                                        <th className="px-6 py-4 text-left text-gray-300 font-semibold">Description</th>
-                                        <th className="px-6 py-4 text-left text-gray-300 font-semibold">Category</th>
-                                        <th className="px-6 py-4 text-left text-gray-300 font-semibold">Type</th>
-                                        <th className="px-6 py-4 text-right text-gray-300 font-semibold">Amount</th>
-                                        <th className="px-6 py-4 text-center text-gray-300 font-semibold">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredTransactions.map((transaction, index) => (
-                                        <tr 
-                                            key={transaction._id} 
-                                            className={`border-t border-gray-600 hover:bg-white/5 transition-colors ${
-                                                index % 2 === 0 ? 'bg-white/5' : ''
-                                            }`}
-                                        >
-                                            <td className="px-6 py-4 text-gray-300">
-                                                {formatDate(transaction.date)}
-                                            </td>
-                                            <td className="px-6 py-4 text-white">
-                                                {transaction.description}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className="inline-block px-2 py-1 text-xs bg-purple-600 text-white rounded-full capitalize">
-                                                    {transaction.category}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full capitalize ${
-                                                    transaction.type === 'income' 
-                                                        ? 'bg-green-600 text-white' 
-                                                        : 'bg-red-600 text-white'
-                                                }`}>
-                                                    {transaction.type === 'income' ? <FaArrowUp /> : <FaArrowDown />}
-                                                    {transaction.type}
-                                                </span>
-                                            </td>
-                                            <td className={`px-6 py-4 text-right font-semibold ${
-                                                transaction.type === 'income' ? 'text-green-400' : 'text-red-400'
-                                            }`}>
-                                                <div className="flex items-center justify-end gap-1">
-                                                    <FaIndianRupeeSign className="text-sm" />
-                                                    {formatAmount(transaction.amount)}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center justify-center gap-2">
-                                                    <button
-                                                        onClick={() => handleDeleteTransaction(transaction._id)}
-                                                        className="p-2 text-red-400 hover:text-red-300 hover:bg-red-400/20 rounded-lg transition-colors"
-                                                        title="Delete transaction"
-                                                    >
-                                                        <FaTrash />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
-            </div>
+            <button
+              onClick={() => setShowModal("expense")}
+              className="ml-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow cursor-pointer"
+            >
+              + Add Expense
+            </button>
+          </div>
         </div>
-    );
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <div className="bg-slate-900/50 hover:bg-slate-900/70 backdrop-blur-lg rounded-lg p-6 shadow-xl border border-white/20 transition-all duration-300">
+            <p className="text-gray-400 text-sm">Total Transactions</p>
+            <p className="text-2xl font-bold text-white">
+              {data.length}
+            </p>
+          </div>
+          <div className="bg-slate-900/50 hover:bg-slate-900/70 backdrop-blur-lg rounded-lg p-6 shadow-xl border border-white/20 transition-all duration-300">
+            <p className="text-gray-400 text-sm">Total Income</p>
+            <div className="flex items-center gap-1 text-green-400 text-2xl font-bold">
+              <FaIndianRupeeSign className="text-lg" />
+              {formatAmount(
+                data
+                  .filter((t) => t.type === "income")
+                  .reduce((sum, t) => sum + t.amount, 0)
+              )}
+            </div>
+          </div>
+          <div className="bg-slate-900/50 hover:bg-slate-900/70 backdrop-blur-lg rounded-lg p-6 shadow-xl border border-white/20 transition-all duration-300">
+            <p className="text-gray-400 text-sm">Total Expenses</p>
+            <div className="flex items-center gap-1 text-red-400 text-2xl font-bold">
+              <FaIndianRupeeSign className="text-lg" />
+              {formatAmount(
+                data
+                  .filter((t) => t.type === "expense")
+                  .reduce((sum, t) => sum + t.amount, 0)
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="relative">
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search..."
+              className="w-full pl-10 pr-4 py-2 bg-slate-900/50 border border-white/15 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500"
+            />
+          </div>
+
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            className="bg-slate-900/50 border border-white/15 text-white px-3 py-2 rounded-lg cursor-pointer"
+          >
+            <option value="all">All</option>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="bg-slate-900/50 border border-white/15 text-white px-3 py-2 rounded-lg cursor-pointer"
+          >
+            <option value="date">Sort by Date</option>
+            <option value="amount">Sort by Amount</option>
+          </select>
+
+          <button
+            onClick={() =>
+              setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
+            }
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition cursor-pointer"
+          >
+            {sortOrder === "asc" ? <FaArrowUp /> : <FaArrowDown />}
+            {sortOrder === "asc" ? "Ascending" : "Descending"}
+          </button>
+
+          <button
+            onClick={downloadCSV}
+            className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg cursor-pointer"
+          >
+            Export CSV
+          </button>
+        </div>
+
+        {/* Table */}
+        <div className="bg-slate-900/60 border border-white/10 rounded-lg shadow overflow-hidden">
+          {filtered.length === 0 ? (
+            <div className="p-6 text-center text-gray-400">
+              No transactions found.
+            </div>
+          ) : (
+            <div className="max-h-[60vh] overflow-y-auto">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 z-10 bg-slate-900 text-purple-300 text-xs uppercase tracking-wide border-b border-white/10">
+                  <tr>
+                    <th className="p-3 text-left">Date</th>
+                    <th className="p-3 text-left">Description</th>
+                    <th className="p-3">Category</th>
+                    <th className="p-3">Type</th>
+                    <th className="p-3 text-right">Amount</th>
+                    <th className="p-3">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((t, i) => (
+                    <tr
+                      key={t._id}
+                      className={`border-t border-white/5 ${
+                        i % 2 === 0 ? "bg-white/5" : ""
+                      } hover:bg-white/10`}
+                    >
+                      <td className="p-3 text-nowrap">{formatDate(t.date)}</td>
+                      <td className={`p-3 ${!t.note && "text-gray-500"}`}>
+                        {t.note || "No description"}
+                      </td>
+                      <td className="p-3">
+                        <div className="text-xs bg-purple-600/70 w-fit mx-auto px-2 py-1 rounded-full text-purple-100 capitalize">
+                          {t.categoryId?.name || "Uncategorized"}
+                        </div>
+                      </td>
+                      <td className="p-3 capitalize">
+                        <div
+                          className={`text-xs px-2 py-1 w-fit mx-auto rounded-full ${
+                            t.type === "income"
+                              ? "bg-green-600 text-green-100"
+                              : "bg-red-600 text-red-100"
+                          }`}
+                        >
+                          {t.type}
+                        </div>
+                      </td>
+                      <td
+                        className={`p-3 text-right font-semibold ${
+                          t.type === "income"
+                            ? "text-green-400"
+                            : "text-red-400"
+                        }`}
+                      >
+                        <div className="flex justify-end items-center gap-1">
+                          <FaIndianRupeeSign className="text-xs" />
+                          {formatAmount(t.amount)}
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <button onClick={() => handleEdit(t)}>
+                          <IoCreateOutline className="text-blue-400 cursor-pointer mr-3" />
+                        </button>
+                        <button onClick={() => handleDelete(t._id)}>
+                          <IoTrashOutline className="text-red-400 cursor-pointer" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+      {showModal === "expense" && (
+        <ExpenseModal
+          onClose={() => {
+            setShowModal("");
+            setEditing(null);
+          }}
+          editing={editing}
+        />
+      )}
+      {showModal === "income" && (
+        <IncomeModal
+          onClose={() => {
+            setShowModal("");
+            setEditing(null);
+          }}
+          editing={editing}
+        />
+      )}
+    </div>
+  );
 };
 
 export default AllTransactions;

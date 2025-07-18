@@ -1,161 +1,64 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { apiEndpoints, fetchWithAuth } from '../utils/api';
-import { toast } from 'react-toastify';
-import { IoAdd, IoCreateOutline, IoTrashOutline, IoWalletOutline, IoCalendarOutline } from 'react-icons/io5';
-import { FaChartPie } from 'react-icons/fa';
+import { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { useData } from "../contexts/DataContext";
+import toast from "react-hot-toast";
+import {
+  IoAdd,
+  IoCreateOutline,
+  IoTrashOutline,
+  IoCalendarOutline,
+} from "react-icons/io5";
+import { FaChartPie } from "react-icons/fa";
+import axios from "axios";
+import BudgetModal from "../modals/Budget.Modal";
 
 const Budgets = () => {
-  const { user, isAuthenticated } = useAuth();
-  const [budgets, setBudgets] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [editingBudget, setEditingBudget] = useState(null);
+  const { isAuthenticated } = useAuth();
+  const { fetchBudgets, budgets } = useData();
 
-  const [formData, setFormData] = useState({
-    categoryId: '',
-    amount: '',
-    startDate: new Date().toISOString().split('T')[0],
-    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 30 days from now
-  });
+  const [spent, setSpent] = useState([]);
+  const [editing, setEditing] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const fetchSpentAmounts = async () => {
+    try {
+      const response = await axios.get(`/api/v1/budgets/spent`);
+      setSpent(response.data.summaries || []);
+    } catch (error) {
+      console.error("Error fetching spent amounts:", error);
+      toast.error("Failed to fetch spent amounts");
+    }
+  };
+
+  const fetchAllBudgetData = async () => {
+    await fetchBudgets();
+    await fetchSpentAmounts();
+  };
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetchBudgets();
-      fetchCategories();
-      fetchTransactions();
+      fetchAllBudgetData();
     }
   }, [isAuthenticated]);
 
-  const fetchBudgets = async () => {
-    try {
-      setLoading(true);
-      const response = await fetchWithAuth(apiEndpoints.budgets);
-      const data = await response.json();
-      setBudgets(data.budgets || []);
-    } catch (error) {
-      console.error('Error fetching budgets:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchCategories = async () => {
-    try {
-      const response = await fetchWithAuth(apiEndpoints.categories);
-      const data = await response.json();
-      const allCategories = data.categories || [];
-      // Only expense categories for budgets
-      const expenseCategories = allCategories.filter(cat => cat.type === 'expense');
-      setCategories(expenseCategories);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    }
-  };
-
-  const fetchTransactions = async () => {
-    try {
-      const response = await fetchWithAuth(`${apiEndpoints.transactions}?type=expense`);
-      const data = await response.json();
-      setTransactions(data.transactions || []);
-    } catch (error) {
-      console.error('Error fetching transactions:', error);
-    }
-  };
-
-  const calculateSpent = (budget) => {
-    const startDate = new Date(budget.startDate);
-    const endDate = new Date(budget.endDate);
-    
-    return transactions
-      .filter(t => 
-        t.categoryId?._id === budget.categoryId?._id &&
-        new Date(t.date) >= startDate &&
-        new Date(t.date) <= endDate
-      )
-      .reduce((sum, t) => sum + t.amount, 0);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!formData.categoryId || !formData.amount || !formData.startDate || !formData.endDate) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    if (new Date(formData.endDate) <= new Date(formData.startDate)) {
-      toast.error('End date must be after start date');
-      return;
-    }
-
-    try {
-      const url = editingBudget 
-        ? apiEndpoints.budgetById(editingBudget._id)
-        : apiEndpoints.budgets;
-      
-      const method = editingBudget ? 'PUT' : 'POST';
-
-      const response = await fetchWithAuth(url, {
-        method,
-        body: JSON.stringify({
-          categoryId: formData.categoryId,
-          amount: parseFloat(formData.amount),
-          startDate: formData.startDate,
-          endDate: formData.endDate
-        })
-      });
-
-      const result = await response.json();
-      toast.success(editingBudget ? 'Budget updated!' : 'Budget created!');
-      fetchBudgets();
-      resetForm();
-    } catch (error) {
-      console.error('Error saving budget:', error);
-      toast.error('Failed to save budget');
-    }
-  };
-
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this budget?')) {
+    if (!window.confirm("Are you sure you want to delete this budget?")) {
       return;
     }
 
     try {
-      await fetchWithAuth(apiEndpoints.budgetById(id), {
-        method: 'DELETE'
-      });
-
-      toast.success('Budget deleted!');
-      fetchBudgets();
+      await axios.delete(`/api/v1/budgets/${id}`);
+      toast.success("Budget deleted!");
+      await fetchAllBudgetData();
     } catch (error) {
-      console.error('Error deleting budget:', error);
-      toast.error('Failed to delete budget');
+      console.error("Error deleting budget:", error);
+      toast.error("Failed to delete budget");
     }
   };
 
   const handleEdit = (budget) => {
-    setEditingBudget(budget);
-    setFormData({
-      categoryId: budget.categoryId?._id || '',
-      amount: budget.amount.toString(),
-      startDate: new Date(budget.startDate).toISOString().split('T')[0],
-      endDate: new Date(budget.endDate).toISOString().split('T')[0]
-    });
-    setShowAddModal(true);
-  };
-
-  const resetForm = () => {
-    setFormData({
-      categoryId: '',
-      amount: '',
-      startDate: new Date().toISOString().split('T')[0],
-      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    });
-    setEditingBudget(null);
-    setShowAddModal(false);
+    setEditing(budget);
+    setShowModal(true);
   };
 
   const getProgressPercentage = (spent, budget) => {
@@ -163,9 +66,9 @@ const Budgets = () => {
   };
 
   const getProgressColor = (percentage) => {
-    if (percentage >= 100) return 'bg-red-500';
-    if (percentage >= 80) return 'bg-yellow-500';
-    return 'bg-green-500';
+    if (percentage >= 100) return "bg-red-500";
+    if (percentage >= 80) return "bg-yellow-500";
+    return "bg-green-500";
   };
 
   if (!isAuthenticated) {
@@ -180,56 +83,66 @@ const Budgets = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
+    <div className="text-white p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold mb-2">Budgets</h1>
             <p className="text-gray-400">Set and track your spending limits</p>
           </div>
           <button
-            onClick={() => setShowAddModal(true)}
-            className="mt-4 sm:mt-0 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            onClick={() => setShowModal(true)}
+            className="mt-4 sm:mt-0 bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
           >
             <IoAdd size={20} />
             Create Budget
           </button>
         </div>
 
-        {/* Budget List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {loading ? (
+          {budgets.length === 0 ? (
             <div className="col-span-full text-center py-8">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-400">Loading budgets...</p>
-            </div>
-          ) : budgets.length === 0 ? (
-            <div className="col-span-full text-center py-8">
-              <FaChartPie className="text-6xl text-gray-500 mx-auto mb-4" />
-              <p className="text-gray-400 text-lg mb-2">No budgets created yet</p>
-              <p className="text-gray-500 mb-4">Start by creating your first budget to track spending</p>
+              <FaChartPie className="text-6xl text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-300 text-lg mb-2">
+                No budgets created yet
+              </p>
+              <p className="text-gray-400 mb-4">
+                Start by creating your first budget to track spending
+              </p>
               <button
-                onClick={() => setShowAddModal(true)}
-                className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg transition-colors"
+                onClick={() => setShowModal(true)}
+                className="bg-yellow-600 hover:bg-yellow-700 px-6 py-2 rounded-lg transition-colors cursor-pointer"
               >
                 Create Your First Budget
               </button>
             </div>
           ) : (
-            budgets.map(budget => {
-              const spent = calculateSpent(budget);
-              const percentage = getProgressPercentage(spent, budget.amount);
-              const remaining = Math.max(budget.amount - spent, 0);
-              const daysLeft = Math.max(0, Math.ceil((new Date(budget.endDate) - new Date()) / (1000 * 60 * 60 * 24)));
+            budgets.map((budget) => {
+              const spentAmount =
+                spent.find((s) => s.categoryId === budget.categoryId?._id)?.spent || 0;
+              const percentage = getProgressPercentage(spentAmount, budget.amount);
+              const remaining = Math.max(budget.amount - spentAmount, 0);
+              const daysLeft = Math.max(
+                0,
+                Math.ceil(
+                  (new Date(budget.endDate) - new Date()) /
+                    (1000 * 60 * 60 * 24)
+                )
+              );
 
               return (
-                <div key={budget._id} className="bg-gray-800 rounded-lg p-6 shadow-lg">
+                <div
+                  key={budget._id}
+                  className="bg-slate-900/50 border border-white/15 rounded-lg p-6 shadow-xl"
+                >
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="text-lg font-semibold">{budget.categoryId?.name || 'Unknown Category'}</h3>
+                      <h3 className="text-lg font-semibold">
+                        {budget.categoryId?.name || "Overall Budget"}
+                      </h3>
                       <p className="text-gray-400 text-sm">
-                        {new Date(budget.startDate).toLocaleDateString()} - {new Date(budget.endDate).toLocaleDateString()}
+                        {new Date(budget.startDate).toLocaleDateString()} -{" "}
+                        {new Date(budget.endDate).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="flex gap-2">
@@ -250,18 +163,26 @@ const Budgets = () => {
 
                   <div className="mb-4">
                     <div className="flex justify-between text-sm mb-2">
-                      <span>Spent: ₹{spent.toFixed(2)}</span>
+                      <span>Spent: ₹{spentAmount.toFixed(2)}</span>
                       <span>Budget: ₹{budget.amount.toFixed(2)}</span>
                     </div>
-                    <div className="w-full bg-gray-700 rounded-full h-3">
+                    <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
                       <div
-                        className={`h-3 rounded-full transition-all duration-300 ${getProgressColor(percentage)}`}
+                        className={`h-3 rounded-full transition-all duration-300 ${getProgressColor(
+                          percentage
+                        )}`}
                         style={{ width: `${percentage}%` }}
                       ></div>
                     </div>
                     <div className="flex justify-between text-xs text-gray-400 mt-2">
                       <span>{percentage.toFixed(0)}% used</span>
-                      <span>₹{remaining.toFixed(2)} remaining</span>
+                      {remaining > 0 ? (
+                        <span>Remaining: ₹{remaining.toFixed(2)}</span>
+                      ) : (
+                        <span>
+                          Over spent: ₹{(spentAmount - budget.amount).toFixed(2)}
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -270,12 +191,20 @@ const Budgets = () => {
                       <IoCalendarOutline />
                       <span>{daysLeft} days left</span>
                     </div>
-                    <div className={`font-semibold ${
-                      percentage >= 100 ? 'text-red-400' : 
-                      percentage >= 80 ? 'text-yellow-400' : 'text-green-400'
-                    }`}>
-                      {percentage >= 100 ? 'Over Budget!' : 
-                       percentage >= 80 ? 'Nearly Reached' : 'On Track'}
+                    <div
+                      className={`font-semibold ${
+                        percentage >= 100
+                          ? "text-red-400"
+                          : percentage >= 80
+                          ? "text-yellow-400"
+                          : "text-green-400"
+                      }`}
+                    >
+                      {percentage >= 100
+                        ? "Over Budget!"
+                        : percentage >= 80
+                        ? "Nearly Reached"
+                        : "On Track"}
                     </div>
                   </div>
                 </div>
@@ -285,85 +214,14 @@ const Budgets = () => {
         </div>
       </div>
 
-      {/* Add/Edit Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-semibold mb-4">
-              {editingBudget ? 'Edit Budget' : 'Create New Budget'}
-            </h2>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Category *</label>
-                <select
-                  value={formData.categoryId}
-                  onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2"
-                  required
-                >
-                  <option value="">Select category</option>
-                  {categories.map(category => (
-                    <option key={category._id} value={category._id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Budget Amount *</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={formData.amount}
-                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2"
-                  placeholder="0.00"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Start Date *</label>
-                <input
-                  type="date"
-                  value={formData.startDate}
-                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">End Date *</label>
-                <input
-                  type="date"
-                  value={formData.endDate}
-                  onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2"
-                  required
-                />
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="flex-1 bg-gray-600 hover:bg-gray-500 py-2 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded-lg transition-colors"
-                >
-                  {editingBudget ? 'Update' : 'Create'} Budget
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {showModal && (
+        <BudgetModal
+          onClose={() => {
+            setShowModal(false);
+            setEditing(null);
+          }}
+          editing={editing}
+        />
       )}
     </div>
   );

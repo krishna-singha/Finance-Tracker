@@ -1,14 +1,19 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import "react-toastify/dist/ReactToastify.css";
 import App from "./App.jsx";
 import { AuthProvider } from "./contexts/AuthContext.jsx";
+import { DataProvider } from "./contexts/DataContext.jsx";
+import { ChatBotProvider } from "./contexts/ChatBotContext.jsx";
 
 createRoot(document.getElementById("root")).render(
-  // <StrictMode>
+  <StrictMode>
     <AuthProvider>
-      <App />
+      <DataProvider>
+        <ChatBotProvider>
+          <App />
+        </ChatBotProvider>
+      </DataProvider>
     </AuthProvider>
-  // </StrictMode>
+  </StrictMode>
 );

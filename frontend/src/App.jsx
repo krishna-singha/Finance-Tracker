@@ -1,102 +1,50 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+
 import Layout from "./components/Layout";
 import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 import SigninPage from "./pages/Signin";
 import SignupPage from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
-import Expenses from "./pages/Expenses";
-import Incomes from "./pages/Incomes";
 import AllTransactions from "./pages/AllTransactions";
-import Analytics from "./pages/Analytics";
 import Profile from "./pages/Profile";
 import Budgets from "./pages/Budgets";
 import Goals from "./pages/Goals";
-import ProtectedRoute from "./components/ProtectedRoute";
+
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const AppRoutes = () => {
-  const { user } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) return <div className="text-white p-6">Loading...</div>;
 
   return (
     <BrowserRouter>
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark"
-        toastStyle={{
-          backgroundColor: 'rgba(30, 41, 59, 0.95)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '12px',
-          color: '#ffffff'
+      <Toaster
+        position="bottom-left"
+        reverseOrder={false}
+        toastOptions={{
+          duration: 2000,
+          style: {
+            background: "#333",
+            color: "#fff",
+          },
         }}
       />
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={user ? <Dashboard /> : <Landing />} />
+          <Route index element={isAuthenticated ? <Dashboard /> : <Landing />} />
+
+          <Route path="/signin" element={!isAuthenticated ? <SigninPage /> : <Navigate to="/" />} />
+          <Route path="/signup" element={!isAuthenticated ? <SignupPage /> : <Navigate to="/" />} />
+
           <Route
-            path="/signin"
-            element={!user ? <SigninPage /> : <Dashboard />}
-          />
-          <Route
-            path="/signup"
-            element={!user ? <SignupPage /> : <Dashboard />}
-          />
-          <Route
-            path="/dashboard"
+            path="/goals"
             element={
               <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/expenses"
-            element={
-              <ProtectedRoute>
-                <Expenses />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/incomes"
-            element={
-              <ProtectedRoute>
-                <Incomes />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/all-transactions"
-            element={
-              <ProtectedRoute>
-                <AllTransactions />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/transactions"
-            element={
-              <ProtectedRoute>
-                <AllTransactions />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/analytics"
-            element={
-              <ProtectedRoute>
-                <Analytics />
+                <Goals />
               </ProtectedRoute>
             }
           />
@@ -109,10 +57,10 @@ const AppRoutes = () => {
             }
           />
           <Route
-            path="/goals"
+            path="/all-transactions"
             element={
               <ProtectedRoute>
-                <Goals />
+                <AllTransactions />
               </ProtectedRoute>
             }
           />
@@ -124,6 +72,7 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
+
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

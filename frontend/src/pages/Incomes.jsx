@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { useData } from "../contexts/DataContext";
 import { apiEndpoints, fetchWithAuth } from "../utils/api";
-import { toast } from "react-toastify";
+import toast from 'react-hot-toast';
 import {
   IoAdd,
   IoCreateOutline,
@@ -11,10 +12,10 @@ import {
   IoTrendingUpOutline,
 } from "react-icons/io5";
 import { FaArrowUp, FaRupeeSign } from "react-icons/fa";
-import { defaultCategories } from "../constants/category";
 
 const Incomes = () => {
   const { user, isAuthenticated } = useAuth();
+  const { data, fetchTransactions, categories } = useData();
   const [incomes, setIncomes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -30,28 +31,14 @@ const Incomes = () => {
   });
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchIncomes();
+    if (data && data.length > 0) {
+      const exp = data.filter((data) => data.type === "income");
+      setIncomes(exp);
+    } else {
+      setIncomes([]);
     }
-  }, [isAuthenticated]);
-
-  const fetchIncomes = async () => {
-    try {
-      setLoading(true);
-      const response = await fetchWithAuth(
-        `${apiEndpoints.transactions}?type=income`
-      );
-      const data = await response.json();
-      setIncomes(data.transactions || data || []);
-    } catch (error) {
-      console.error("Error fetching incomes:", error);
-      if (error.message && error.message.includes("HTTP error")) {
-        toast.error("Failed to load incomes");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+    setLoading(false);
+  }, [data])
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,6 +49,7 @@ const Incomes = () => {
     }
 
     try {
+      
       const url = editingIncome
         ? apiEndpoints.transactionById(editingIncome._id)
         : apiEndpoints.transactions;
@@ -77,8 +65,6 @@ const Incomes = () => {
         date: formData.date,
       };
 
-      // console.log("Sending transaction data:", requestData); // Debug log
-
       const response = await fetchWithAuth(url, {
         method,
         body: JSON.stringify(requestData),
@@ -86,7 +72,7 @@ const Incomes = () => {
 
       const result = await response.json();
       toast.success(editingIncome ? "Income updated!" : "Income added!");
-      fetchIncomes();
+      fetchTransactions();
       resetForm();
     } catch (error) {
       console.error("Error saving income:", error);
@@ -146,6 +132,9 @@ const Incomes = () => {
       setShowAddModal(false);
     }
   };
+
+      
+
 
   const filteredIncomes = incomes.filter((income) => {
     const categoryMatch = !filterCategory || income.category === filterCategory;
@@ -219,7 +208,7 @@ const Incomes = () => {
                 className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2"
               >
                 <option value="">All Categories</option>
-                {defaultCategories
+                {categories
                   .filter((category) => category.type === "income")
                   .map((category, index) => (
                     <option key={index} value={category.name}>
@@ -367,7 +356,7 @@ const Incomes = () => {
                   required
                 >
                   <option value="">Select category</option>
-                  {defaultCategories
+                  {categories
                     .filter((category) => category.type === "income")
                     .map((category, index) => (
                       <option key={index} value={category.name}>

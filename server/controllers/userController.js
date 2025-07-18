@@ -1,11 +1,9 @@
 import { User } from "../model/User.js";
 import { Category } from "../model/Category.js";
-import {
-  successResponse,
-  errorResponse,
-} from "../utils/responseUtils.js";
+import { successResponse, errorResponse } from "../utils/responseUtils.js";
 import bcrypt from "bcrypt";
 import { generateToken } from "../utils/token.js";
+import { defaultCategory } from "../utils/defaultCategory.js";
 
 // Signup Controller
 export const signup = async (req, res) => {
@@ -22,23 +20,18 @@ export const signup = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 11);
-    const newUser = await User.create({ name, email, password: hashedPassword });
-
-    // Create default categories for the new user
-    // const defaultCategories = [
-    //   { userId: newUser._id, name: 'Food & Dining', type: 'expense' },
-    //   { userId: newUser._id, name: 'Transportation', type: 'expense' },
-    //   { userId: newUser._id, name: 'Shopping', type: 'expense' },
-    //   { userId: newUser._id, name: 'Entertainment', type: 'expense' },
-    //   { userId: newUser._id, name: 'Bills & Utilities', type: 'expense' },
-    //   { userId: newUser._id, name: 'Healthcare', type: 'expense' },
-    //   { userId: newUser._id, name: 'Salary', type: 'income' },
-    //   { userId: newUser._id, name: 'Freelance', type: 'income' },
-    //   { userId: newUser._id, name: 'Investments', type: 'income' },
-    //   { userId: newUser._id, name: 'Other Income', type: 'income' },
-    // ];
-
-    // await Category.insertMany(defaultCategories);
+    const newUser = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
+    
+    await Category.insertMany(
+      defaultCategory.map((item) => ({
+        ...item,
+        userId: newUser._id,
+      }))
+    );
 
     const token = generateToken(newUser._id.toString());
 
@@ -101,9 +94,9 @@ export const login = async (req, res) => {
 export const getUserProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    
-    const user = await User.findById(userId).select('-password');
-    
+
+    const user = await User.findById(userId).select("-password");
+
     if (!user) {
       return errorResponse(res, 404, "User not found!");
     }
@@ -142,7 +135,7 @@ export const updateUserProfile = async (req, res) => {
       userId,
       { name, email },
       { new: true, runValidators: true }
-    ).select('-password');
+    ).select("-password");
 
     if (!updatedUser) {
       return errorResponse(res, 404, "User not found!");

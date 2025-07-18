@@ -1,4 +1,5 @@
 import { Category } from '../model/Category.js';
+import { Transaction } from '../model/Transection.js';
 import {
   successResponse,
   errorResponse,
@@ -13,8 +14,9 @@ export const getCategories = async (req, res) => {
   try {
     const userId = req.user._id.toString();
     
-    const categories = await Category.find({ userId }).sort({ name: 1 });
-    
+    // Find the categories for the user
+    const categories = await Category.find({ userId }).select('-__v -userId');
+
     return successResponse(res, {
       message: 'Categories retrieved successfully',
       categories
@@ -27,11 +29,13 @@ export const getCategories = async (req, res) => {
 
 // Create a new category
 export const createCategory = async (req, res) => {
-  const { name, type, icon } = req.body;
+
+  const { name, type } = req.body;
 
   if (!name || !type) {
     return errorResponse(res, 400, 'Name and type are required');
   }
+
 
   if (!['income', 'expense'].includes(type)) {
     return errorResponse(res, 400, 'Type must be either "income" or "expense"');
@@ -42,31 +46,30 @@ export const createCategory = async (req, res) => {
   }
 
   try {
-    const userId = req.user._id.toString(); // Get user ID from JWT middleware
+    const userId = req.user._id.toString();
 
-    // Check if category already exists for this user
-    const existingCategory = await Category.findOne({ 
-      userId, 
-      name: name.trim(),
-      type 
+    const regex = new RegExp(`^${name.trim()}$`, 'i')
+
+    // Check if the category already exists for the user with case-insensitive match
+    const categoryExists = await Category.exists({
+      userId,
+      name: { $regex: regex},
+      type
     });
 
-    if (existingCategory) {
-      return errorResponse(res, 400, 'Category with this name already exists for this type');
+    if (categoryExists) {
+      return errorResponse(res, 400, `Category already exists for "${type}"`);
     }
 
-    const category = new Category({
+    // Create the new category
+    await Category.create({
       userId,
       name: name.trim(),
-      type,
-      icon: icon || ''
+      type
     });
-
-    await category.save();
 
     return successResponse(res, {
       message: 'Category created successfully',
-      category
     }, 201);
   } catch (error) {
     console.error("Create Category Error:", error);
@@ -77,7 +80,7 @@ export const createCategory = async (req, res) => {
 // Update a category
 export const updateCategory = async (req, res) => {
   const { categoryId } = req.params;
-  const { name, type, icon } = req.body;
+  const { name, type } = req.body;
 
   if (!categoryId) {
     return errorResponse(res, 400, 'Category ID is required');
@@ -88,28 +91,36 @@ export const updateCategory = async (req, res) => {
   }
 
   try {
-    const userId = req.user._id.toString(); // Get user ID from JWT middleware
+    const userId = req.user._id.toString();
 
-    // Verify category belongs to user
-    const existingCategory = await Category.findOne({ _id: categoryId, userId });
-    if (!existingCategory) {
-      return errorResponse(res, 404, 'Category not found or does not belong to user');
+    // check if the category name already exists for the user
+    if (name) {
+      const regex = new RegExp(`^${name.trim()}$`, 'i');
+      const categoryExists = await Category.exists({
+        _id: { $ne: categoryId },
+        userId,
+        name: { $regex: regex },
+        type 
+      });
+      if (categoryExists) {
+        return errorResponse(res, 400, `Category already exists for "${type}"`);
+      }
     }
 
-    const updateFields = {};
-    if (name) updateFields.name = name.trim();
-    if (type && ['income', 'expense'].includes(type)) updateFields.type = type;
-    if (icon !== undefined) updateFields.icon = icon;
-
-    const category = await Category.findByIdAndUpdate(
-      categoryId,
-      updateFields,
+    // update the category
+    const updated = await Category.findOneAndUpdate(
+      { _id: categoryId, userId },
+      { $set: { name: name.trim(), type} },
       { new: true, runValidators: true }
     );
 
+    if (!updated) {
+      return errorResponse(res, 404, 'Category not found or does not belong to user');
+    }
+
     return successResponse(res, {
       message: 'Category updated successfully',
-      category
+      category: updated
     });
   } catch (error) {
     console.error("Update Category Error:", error);
@@ -117,38 +128,40 @@ export const updateCategory = async (req, res) => {
   }
 };
 
+
 // Delete a category
 export const deleteCategory = async (req, res) => {
   const { categoryId } = req.params;
-
-  if (!categoryId) {
-    return errorResponse(res, 400, 'Category ID is required');
-  }
-
-  if (!req.user) {
-    return errorResponse(res, 401, "User not authenticated");
-  }
+  const forceDelete = req.query.force === "true";
 
   try {
-    const userId = req.user._id.toString(); // Get user ID from JWT middleware
+    const category = await Category.findById(categoryId);
+    if (!category) return errorResponse(res, 404, "Category not found");
 
-    // Verify category belongs to user before deleting
-    const category = await Category.findOneAndDelete({ 
-      _id: categoryId, 
-      userId 
-    });
+    const transactionCount = await Transaction.countDocuments({ categoryId });
 
-    if (!category) {
-      return errorResponse(res, 404, 'Category not found or does not belong to user');
+    // Warn if category is in use and not forcing delete
+    if (transactionCount && !forceDelete) {
+      return successResponse(res, {
+        warn: true,
+        message: `This category is used in ${transactionCount} transaction(s).`,
+        count: transactionCount,
+      });
     }
 
+    // Delete transactions if forceDelete is true
+    if (forceDelete && transactionCount) {
+      await Transaction.deleteMany({ categoryId });
+    }
+
+    await category.deleteOne();
+
     return successResponse(res, {
-      message: 'Category deleted successfully'
+      message: `Category deleted${transactionCount ? " along with related transactions" : ""}.`,
+      deletedTransactions: transactionCount,
     });
-  } catch (error) {
-    console.error("Delete Category Error:", error);
-    return errorResponse(res, 500, "Internal server error");
+  } catch (err) {
+    console.error("Delete Category Error:", err);
+    return errorResponse(res, 500, "Failed to delete category");
   }
 };
-
-

@@ -23,7 +23,6 @@ const Analytics = () => {
             setTransactions(data.transactions || data || []);
         } catch (error) {
             console.error('Error fetching transactions:', error);
-            // Silently handle errors for analytics - don't show toast for empty data
         } finally {
             setLoading(false);
         }

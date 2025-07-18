@@ -5,7 +5,8 @@ import {
   createBudget,
   updateBudget,
   deleteBudget,
-  getBudgetOverview
+  getBudgetOverview,
+  getSpentAmount
 } from '../controllers/budgetController.js';
 
 const router = express.Router();
@@ -19,5 +20,6 @@ router.post('/', createBudget);                   // POST /api/v1/budgets
 router.get('/overview', getBudgetOverview);       // GET /api/v1/budgets/overview
 router.put('/:budgetId', updateBudget);           // PUT /api/v1/budgets/:budgetId
 router.delete('/:budgetId', deleteBudget);        // DELETE /api/v1/budgets/:budgetId
+router.get('/spent', getSpentAmount);  // GET /api/v1/budgets/:budgetId/spent
 
 export default router;

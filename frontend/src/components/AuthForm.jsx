@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { toast } from "react-toastify";
+import toast from 'react-hot-toast';
 import { isValidEmail, validatePassword, validateName } from "../utils/form";
 
 export default function AuthForm({ type = "signup" }) {

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useMemo } from "react";
 import axios from "axios";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
@@ -6,17 +6,11 @@ axios.defaults.baseURL = BACKEND_URL;
 
 const AuthContext = createContext();
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [authLoading, setauthLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const authenticated = () => {
@@ -29,6 +23,7 @@ export const AuthProvider = ({ children }) => {
 
       const payload = JSON.parse(atob(parts[1]));
       const currentTime = Date.now() / 1000;
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
       return payload.exp ? payload.exp > currentTime : true;
     } catch (error) {
@@ -55,7 +50,10 @@ export const AuthProvider = ({ children }) => {
       return { success: true, user: userData };
     } catch (error) {
       const status = error.response?.status;
-      const message = error.response?.data?.message || error.message || "Failed to fetch profile";
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to fetch profile";
 
       if (status === 401) {
         localStorage.removeItem("authToken");
@@ -90,18 +88,12 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setIsAuthenticated(false);
       } finally {
-        setLoading(false);
+        setauthLoading(false);
       }
     };
 
     initializeAuth();
   }, []);
-
-  // // Optional: Track user state changes
-  // useEffect(() => {
-  //   console.log("User state changed:", user);
-  // }, [user]);
-
 
   const login = async (email, password) => {
     try {
@@ -168,20 +160,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const contextValue = useMemo(
+    () => ({
+      user,
+      isAuthenticated,
+      authLoading,
+      signup,
+      login,
+      logout,
+      setUser,
+      authenticated,
+      fetchUserProfile,
+    }),
+    [user, isAuthenticated]
+  );
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated,
-        loading,
-        signup,
-        login,
-        logout,
-        setUser,
-        authenticated,
-        fetchUserProfile,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

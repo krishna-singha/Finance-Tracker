@@ -98,8 +98,6 @@
 
 
 export const errorResponse = (res, code, message) => {
-  console.log(message);
-  
   return res.status(code).json({ success: false, message });
 };
 export const successResponse = (res, data, code = 200) => {
