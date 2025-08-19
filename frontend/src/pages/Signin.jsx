@@ -3,7 +3,7 @@ import AuthForm from "../components/AuthForm";
 
 const SigninPage = () => {
   return (
-    <div className="w-full mx-auto max-w-md flex-1 flex flex-col justify-center">
+    <div className="w-full mx-auto max-w-md flex-1 flex flex-col justify-center py-8 px-3">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
         <p className="text-gray-400">Sign in to your account to continue</p>
@@ -25,7 +25,7 @@ const SigninPage = () => {
         </div>
       </div>
 
-      <div className="mt-8 text-center">
+      <div className="mt-3 text-center">
         <p className="text-gray-500 text-sm">
           💰 Track unlimited
           transactions

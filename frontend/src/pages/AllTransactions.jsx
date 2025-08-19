@@ -87,7 +87,6 @@ const AllTransactions = () => {
       await axios.delete(`/api/v1/transactions/${id}`);
       toast.success("Transaction deleted successfully");
       setFiltered((prev) => prev.filter((t) => t._id !== id));
-      // Optionally, you can also refetch transactions here
       fetchTransections();
     } catch (error) {
       toast.error("Failed to delete transaction");
@@ -96,65 +95,77 @@ const AllTransactions = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       <div className="max-w-7xl w-full mx-auto flex flex-col space-y-6">
-        <div className="flex justify-between items-center mb-16">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-10 gap-4 sm:gap-0">
           <div>
-            <h1 className="text-3xl font-bold">Transactions</h1>
-            <p className="text-gray-400">
-              Manage and view all your financial transactions in one place.{" "}
+            <h1 className="text-2xl sm:text-3xl font-bold">Transactions</h1>
+            <p className="text-gray-400 text-sm sm:text-base max-w-md">
+              Manage and view all your financial transactions in one place.
             </p>
           </div>
-          <div>
+          <div className="flex flex-wrap gap-2 sm:gap-4">
             <button
               onClick={() => setShowModal("income")}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow cursor-pointer"
+              className="bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-1 sm:py-2 rounded-lg shadow text-sm sm:text-base whitespace-nowrap"
             >
               + Add Income
             </button>
 
             <button
               onClick={() => setShowModal("expense")}
-              className="ml-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow cursor-pointer"
+              className="bg-red-600 hover:bg-red-700 text-white px-3 sm:px-4 py-1 sm:py-2 rounded-lg shadow text-sm sm:text-base whitespace-nowrap"
             >
               + Add Expense
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <div className="bg-slate-900/50 hover:bg-slate-900/70 backdrop-blur-lg rounded-lg p-6 shadow-xl border border-white/20 transition-all duration-300">
-            <p className="text-gray-400 text-sm">Total Transactions</p>
-            <p className="text-2xl font-bold text-white">
-              {data.length}
-            </p>
-          </div>
-          <div className="bg-slate-900/50 hover:bg-slate-900/70 backdrop-blur-lg rounded-lg p-6 shadow-xl border border-white/20 transition-all duration-300">
-            <p className="text-gray-400 text-sm">Total Income</p>
-            <div className="flex items-center gap-1 text-green-400 text-2xl font-bold">
-              <FaIndianRupeeSign className="text-lg" />
-              {formatAmount(
-                data
-                  .filter((t) => t.type === "income")
-                  .reduce((sum, t) => sum + t.amount, 0)
-              )}
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-10">
+          {[
+            {
+              label: "Total Transactions",
+              value: data.length,
+              color: "text-white",
+            },
+            {
+              label: "Total Income",
+              value: data
+                .filter((t) => t.type === "income")
+                .reduce((sum, t) => sum + t.amount, 0),
+              color: "text-green-400",
+              icon: <FaIndianRupeeSign className="text-base sm:text-lg" />,
+            },
+            {
+              label: "Total Expenses",
+              value: data
+                .filter((t) => t.type === "expense")
+                .reduce((sum, t) => sum + t.amount, 0),
+              color: "text-red-400",
+              icon: <FaIndianRupeeSign className="text-base sm:text-lg" />,
+            },
+          ].map((card, i) => (
+            <div
+              key={i}
+              className="bg-slate-900/50 hover:bg-slate-900/70 backdrop-blur-lg rounded-lg p-4 sm:p-6 shadow-xl border border-white/20 transition-all duration-300 flex items-center justify-between"
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-gray-400 text-xs sm:text-sm truncate">
+                  {card.label}
+                </p>
+                <p className={`text-lg sm:text-2xl font-bold ${card.color} flex items-center gap-1 truncate`}>
+                  {card.icon}
+                  {card.icon ? formatAmount(card.value) : card.value}
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="bg-slate-900/50 hover:bg-slate-900/70 backdrop-blur-lg rounded-lg p-6 shadow-xl border border-white/20 transition-all duration-300">
-            <p className="text-gray-400 text-sm">Total Expenses</p>
-            <div className="flex items-center gap-1 text-red-400 text-2xl font-bold">
-              <FaIndianRupeeSign className="text-lg" />
-              {formatAmount(
-                data
-                  .filter((t) => t.type === "expense")
-                  .reduce((sum, t) => sum + t.amount, 0)
-              )}
-            </div>
-          </div>
+          ))}
         </div>
 
         {/* Filters */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3 mb-4">
           <div className="relative">
             <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
@@ -162,14 +173,14 @@ const AllTransactions = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search..."
-              className="w-full pl-10 pr-4 py-2 bg-slate-900/50 border border-white/15 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500"
+              className="w-full pl-10 pr-4 py-2 sm:py-2 bg-slate-900/50 border border-white/15 rounded-lg text-white text-sm sm:text-base placeholder-gray-400 focus:ring-2 focus:ring-purple-500"
             />
           </div>
 
           <select
             value={type}
             onChange={(e) => setType(e.target.value)}
-            className="bg-slate-900/50 border border-white/15 text-white px-3 py-2 rounded-lg cursor-pointer"
+            className="bg-slate-900/50 border border-white/15 text-white text-sm sm:text-base px-3 py-2 rounded-lg cursor-pointer"
           >
             <option value="all">All</option>
             <option value="income">Income</option>
@@ -179,7 +190,7 @@ const AllTransactions = () => {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="bg-slate-900/50 border border-white/15 text-white px-3 py-2 rounded-lg cursor-pointer"
+            className="bg-slate-900/50 border border-white/15 text-white text-sm sm:text-base px-3 py-2 rounded-lg cursor-pointer"
           >
             <option value="date">Sort by Date</option>
             <option value="amount">Sort by Amount</option>
@@ -189,15 +200,17 @@ const AllTransactions = () => {
             onClick={() =>
               setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
             }
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition cursor-pointer"
+            className="mt-6 sm:mt-0 flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm sm:text-base transition"
           >
             {sortOrder === "asc" ? <FaArrowUp /> : <FaArrowDown />}
-            {sortOrder === "asc" ? "Ascending" : "Descending"}
+            <span className="">
+              {sortOrder === "asc" ? "Ascending" : "Descending"}
+            </span>
           </button>
 
           <button
             onClick={downloadCSV}
-            className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg cursor-pointer"
+            className="mb-6 sm:mb-0 bg-green-600 hover:bg-green-700 px-2 sm:px-4 py-2 rounded-lg text-sm sm:text-base cursor-pointer whitespace-nowrap"
           >
             Export CSV
           </button>
@@ -210,16 +223,16 @@ const AllTransactions = () => {
               No transactions found.
             </div>
           ) : (
-            <div className="max-h-[60vh] overflow-y-auto">
-              <table className="w-full text-sm">
-                <thead className="sticky top-0 z-10 bg-slate-900 text-purple-300 text-xs uppercase tracking-wide border-b border-white/10">
+            <div className="max-h-[60vh] overflow-x-auto overflow-y-auto">
+              <table className="w-full text-sm table-auto min-w-[600px]">
+                <thead className="sticky top-0 z-10 bg-slate-900 text-purple-300 text-xs sm:text-sm uppercase tracking-wide border-b border-white/10">
                   <tr>
-                    <th className="p-3 text-left">Date</th>
-                    <th className="p-3 text-left">Description</th>
-                    <th className="p-3">Category</th>
-                    <th className="p-3">Type</th>
-                    <th className="p-3 text-right">Amount</th>
-                    <th className="p-3">Actions</th>
+                    <th className="p-2 sm:p-3 text-left">Date</th>
+                    <th className="p-2 sm:p-3 text-left">Description</th>
+                    <th className="p-2 sm:p-3">Category</th>
+                    <th className="p-2 sm:p-3">Type</th>
+                    <th className="p-2 sm:p-3 text-right">Amount</th>
+                    <th className="p-2 sm:p-3">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -230,18 +243,24 @@ const AllTransactions = () => {
                         i % 2 === 0 ? "bg-white/5" : ""
                       } hover:bg-white/10`}
                     >
-                      <td className="p-3 text-nowrap">{formatDate(t.date)}</td>
-                      <td className={`p-3 ${!t.note && "text-gray-500"}`}>
+                      <td className="p-2 sm:p-3 whitespace-nowrap">
+                        {formatDate(t.date)}
+                      </td>
+                      <td
+                        className={`p-2 sm:p-3 truncate ${
+                          !t.note && "text-gray-500"
+                        }`}
+                      >
                         {t.note || "No description"}
                       </td>
-                      <td className="p-3">
-                        <div className="text-xs bg-purple-600/70 w-fit mx-auto px-2 py-1 rounded-full text-purple-100 capitalize">
+                      <td className="p-2 sm:p-3">
+                        <div className="text-xs sm:text-sm bg-purple-600/70 w-fit mx-auto px-2 py-1 rounded-full text-purple-100 capitalize truncate">
                           {t.categoryId?.name || "Uncategorized"}
                         </div>
                       </td>
-                      <td className="p-3 capitalize">
+                      <td className="p-2 sm:p-3 capitalize">
                         <div
-                          className={`text-xs px-2 py-1 w-fit mx-auto rounded-full ${
+                          className={`text-xs sm:text-sm px-2 py-1 w-fit mx-auto rounded-full ${
                             t.type === "income"
                               ? "bg-green-600 text-green-100"
                               : "bg-red-600 text-red-100"
@@ -250,24 +269,24 @@ const AllTransactions = () => {
                           {t.type}
                         </div>
                       </td>
-                      <td
-                        className={`p-3 text-right font-semibold ${
-                          t.type === "income"
-                            ? "text-green-400"
-                            : "text-red-400"
-                        }`}
-                      >
-                        <div className="flex justify-end items-center gap-1">
-                          <FaIndianRupeeSign className="text-xs" />
+                      <td className="p-2 sm:p-3 text-right font-semibold">
+                        <div
+                          className={`flex justify-end items-center gap-1 ${
+                            t.type === "income"
+                              ? "text-green-400"
+                              : "text-red-400"
+                          }`}
+                        >
+                          <FaIndianRupeeSign className="text-xs sm:text-sm" />
                           {formatAmount(t.amount)}
                         </div>
                       </td>
-                      <td className="p-3">
+                      <td className="p-2 sm:p-3 flex gap-2 justify-center">
                         <button onClick={() => handleEdit(t)}>
-                          <IoCreateOutline className="text-blue-400 cursor-pointer mr-3" />
+                          <IoCreateOutline className="text-blue-400 cursor-pointer text-lg" />
                         </button>
                         <button onClick={() => handleDelete(t._id)}>
-                          <IoTrashOutline className="text-red-400 cursor-pointer" />
+                          <IoTrashOutline className="text-red-400 cursor-pointer text-lg" />
                         </button>
                       </td>
                     </tr>
@@ -278,6 +297,8 @@ const AllTransactions = () => {
           )}
         </div>
       </div>
+
+      {/* Modals */}
       {showModal === "expense" && (
         <ExpenseModal
           onClose={() => {

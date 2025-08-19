@@ -3,7 +3,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useChatBot } from "../contexts/ChatBotContext";
 import { apiEndpoints, fetchWithAuth } from "../utils/api";
 import { FaRobot, FaCopy, FaPaperPlane } from "react-icons/fa";
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 import ReactMarkdown from "react-markdown";
 
 const GroqAI = ({ transactions = [] }) => {
@@ -21,7 +21,6 @@ const GroqAI = ({ transactions = [] }) => {
     const userMessage = inputValue.trim();
     setLoading(true);
 
-    // Add user message to conversation
     setConversationHistory((prev) => [
       ...prev,
       { type: "user", message: userMessage },
@@ -29,18 +28,13 @@ const GroqAI = ({ transactions = [] }) => {
     setInputValue("");
 
     try {
-      // Make actual API call to backend Gemini endpoint
       const response = await fetchWithAuth(apiEndpoints.ai, {
         method: "POST",
-        body: JSON.stringify({
-          userPrompt: userMessage,
-          data: transactions,
-        }),
+        body: JSON.stringify({ userPrompt: userMessage, data: transactions }),
       });
 
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
-      }
 
       const result = await response.json();
       const aiMessage =
@@ -49,18 +43,19 @@ const GroqAI = ({ transactions = [] }) => {
         result.data ||
         "I couldn't generate a response at this time.";
 
-      // Add AI response to conversation
       setConversationHistory((prev) => [
         ...prev,
         { type: "ai", message: aiMessage },
       ]);
     } catch (err) {
       console.error("Error fetching suggestions:", err);
-      const errorMessage =
-        "Sorry, I'm having trouble connecting right now. Please try again later.";
       setConversationHistory((prev) => [
         ...prev,
-        { type: "ai", message: errorMessage },
+        {
+          type: "ai",
+          message:
+            "Sorry, I'm having trouble connecting right now. Please try again later.",
+        },
       ]);
       toast.error("Failed to get AI response");
     } finally {
@@ -79,7 +74,7 @@ const GroqAI = ({ transactions = [] }) => {
     try {
       await navigator.clipboard.writeText(text);
       toast.success("Copied to clipboard!");
-    } catch (err) {
+    } catch {
       toast.error("Failed to copy");
     }
   };
@@ -94,7 +89,8 @@ const GroqAI = ({ transactions = [] }) => {
   ];
 
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className="flex-1 flex flex-col h-full min-h-0">
+      {/* Header */}
       <div className="flex items-center justify-between border-b border-cyan-400/30 pb-4">
         <h2 className="text-xl font-bold text-white flex items-center gap-3">
           <div className="p-2 rounded-lg bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30">
@@ -107,7 +103,8 @@ const GroqAI = ({ transactions = [] }) => {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col overflow-y-auto pr-1 my-2 space-y-4 custom-scrollbar">
+      {/* Chat Area */}
+      <div className=" h-[60vh] flex flex-col overflow-y-auto pr-1 my-2 space-y-4 custom-scrollbar">
         {!isAuthenticated ? (
           <div className="text-center py-8">
             <div className="p-4 rounded-full bg-cyan-500/20 border border-cyan-400/30 w-fit mx-auto mb-4">
@@ -149,13 +146,18 @@ const GroqAI = ({ transactions = [] }) => {
               conversationHistory.map((item, index) => (
                 <div
                   key={index}
-                  className={`flex gap-3 ${
-                    item.type === "user" ? "justify-end" : "justify-start"
+                  className={`flex flex-col gap-2 ${
+                    item.type === "user" ? "items-end" : " items-start"
                   }`}
                 >
                   {item.type === "ai" && (
                     <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center">
                       <FaRobot className="text-white text-sm" />
+                    </div>
+                  )}
+                  {item.type === "user" && (
+                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                      {user.name?.charAt(0)?.toUpperCase() || "U"}
                     </div>
                   )}
                   <div
@@ -168,100 +170,7 @@ const GroqAI = ({ transactions = [] }) => {
                     {item.type === "ai" ? (
                       <div>
                         <div className="markdown-content text-sm prose prose-invert prose-sm max-w-none">
-                          <ReactMarkdown
-                            components={{
-                              h1: ({ node, ...props }) => (
-                                <h1
-                                  className="text-lg font-bold mb-2 text-cyan-400"
-                                  {...props}
-                                />
-                              ),
-                              h2: ({ node, ...props }) => (
-                                <h2
-                                  className="text-base font-bold mb-2 text-cyan-300"
-                                  {...props}
-                                />
-                              ),
-                              h3: ({ node, ...props }) => (
-                                <h3
-                                  className="text-sm font-bold mb-1 text-cyan-200"
-                                  {...props}
-                                />
-                              ),
-                              p: ({ node, ...props }) => (
-                                <p className="mb-2 last:mb-0" {...props} />
-                              ),
-                              ul: ({ node, ...props }) => (
-                                <ul
-                                  className="list-disc list-inside mb-2 space-y-1"
-                                  {...props}
-                                />
-                              ),
-                              ol: ({ node, ...props }) => (
-                                <ol
-                                  className="list-decimal list-inside mb-2 space-y-1"
-                                  {...props}
-                                />
-                              ),
-                              li: ({ node, ...props }) => (
-                                <li className="text-gray-200" {...props} />
-                              ),
-                              strong: ({ node, ...props }) => (
-                                <strong
-                                  className="font-bold text-white"
-                                  {...props}
-                                />
-                              ),
-                              em: ({ node, ...props }) => (
-                                <em
-                                  className="italic text-gray-300"
-                                  {...props}
-                                />
-                              ),
-                              code: ({ node, inline, ...props }) =>
-                                inline ? (
-                                  <code
-                                    className="bg-gray-700/50 px-1 py-0.5 rounded text-cyan-300 font-mono text-xs"
-                                    {...props}
-                                  />
-                                ) : (
-                                  <pre className="bg-gray-800/50 p-2 rounded my-2 overflow-x-auto">
-                                    <code
-                                      className="text-cyan-300 font-mono text-xs block"
-                                      {...props}
-                                    />
-                                  </pre>
-                                ),
-                              blockquote: ({ node, ...props }) => (
-                                <blockquote
-                                  className="border-l-4 border-cyan-400 pl-3 italic text-gray-300 my-2"
-                                  {...props}
-                                />
-                              ),
-                              table: ({ node, ...props }) => (
-                                <div className="overflow-x-auto my-2">
-                                  <table
-                                    className="min-w-full divide-y divide-gray-700/30"
-                                    {...props}
-                                  />
-                                </div>
-                              ),
-                              th: ({ node, ...props }) => (
-                                <th
-                                  className="px-2 py-1 bg-gray-800/30 font-medium text-left text-cyan-200"
-                                  {...props}
-                                />
-                              ),
-                              td: ({ node, ...props }) => (
-                                <td
-                                  className="px-2 py-1 border-t border-gray-700/30"
-                                  {...props}
-                                />
-                              ),
-                            }}
-                          >
-                            {item.message}
-                          </ReactMarkdown>
+                          <ReactMarkdown>{item.message}</ReactMarkdown>
                         </div>
                         <div className="flex gap-2 mt-2 pt-2 border-t border-white/20">
                           <button
@@ -277,11 +186,6 @@ const GroqAI = ({ transactions = [] }) => {
                       <div className="text-sm">{item.message}</div>
                     )}
                   </div>
-                  {item.type === "user" && (
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                      {user.name?.charAt(0)?.toUpperCase() || "U"}
-                    </div>
-                  )}
                 </div>
               ))
             )}
@@ -302,6 +206,7 @@ const GroqAI = ({ transactions = [] }) => {
         )}
       </div>
 
+      {/* Input */}
       <div className="sticky bottom-0 left-0 w-full">
         <div className="flex items-center gap-2 bg-white/5 p-3 rounded-xl border border-white/20 focus-within:border-cyan-400/50 transition-colors">
           <input

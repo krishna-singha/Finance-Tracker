@@ -11,6 +11,7 @@ import AllTransactions from "./pages/AllTransactions";
 import Profile from "./pages/Profile";
 import Budgets from "./pages/Budgets";
 import Goals from "./pages/Goals";
+import ChatBotPage from "./pages/ChatBotPage";
 
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -69,6 +70,16 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Mobile Chatbot page */}
+          <Route
+            path="/chatbot"
+            element={
+              <ProtectedRoute>
+                <ChatBotPage />
               </ProtectedRoute>
             }
           />
